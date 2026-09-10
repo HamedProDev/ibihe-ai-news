@@ -1,108 +1,107 @@
 'use client';
-import { NewsArticle } from '@/types';
-import { Brain, Clock, Eye, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+
+import Link from 'next/link';
+import { Clock, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import type { Article, NewsArticle } from '@/types';
+import { CategoryBadge, ContentStatusBadge } from '@/components/ui/Badges';
+import { useLocale } from '@/components/i18n/LanguageProvider';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  ubuhinzi: 'bg-green-500/20 text-green-400 border-green-500/30',
-  politiki: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  ubukungu: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  ikoranabuhanga: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  ubuzima: 'bg-red-500/20 text-red-400 border-red-500/30',
-  imikino: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  amahanga: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-};
+type CardArticle = Article | NewsArticle;
 
-const CATEGORY_LABELS: Record<string, string> = {
-  ubuhinzi: 'Ubuhinzi', politiki: 'Politiki', ubukungu: 'Ubukungu',
-  ikoranabuhanga: 'Ikoranabuhanga', ubuzima: 'Ubuzima',
-  imikino: 'Imikino', amahanga: 'Amahanga',
-};
-
-function DirectionBadge({ direction, percentChange }: { direction: string; percentChange?: number | null }) {
-  const configs = {
-    up: { icon: TrendingUp, label: percentChange ? `+${percentChange}%` : 'Hejuru', cls: 'bg-green-500/20 text-green-400 border-green-500/30' },
-    down: { icon: TrendingDown, label: percentChange ? `${percentChange}%` : 'Hasi', cls: 'bg-red-500/20 text-red-400 border-red-500/30' },
-    warning: { icon: AlertTriangle, label: 'Kugenzura', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    neutral: { icon: Minus, label: 'Ruguma', cls: 'bg-white/10 text-white/60 border-white/20' },
-  };
-  const d = configs[direction as keyof typeof configs] || configs.neutral;
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border ${d.cls}`}>
-      <d.icon size={10} />
-      {d.label}
-    </span>
-  );
+function isFull(a: CardArticle): a is Article {
+  return 'sources' in a && Array.isArray((a as Article).sources);
 }
 
-export default function NewsCard({ article, variant = 'grid' }: { article: NewsArticle; variant?: 'hero' | 'grid' }) {
-  const timeAgo = formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true });
-  const catColor = CATEGORY_COLORS[article.category] || 'bg-white/10 text-white/60 border-white/20';
+function timeAgo(iso: string): string {
+  try {
+    return formatDistanceToNow(new Date(iso), { addSuffix: true });
+  } catch {
+    return '';
+  }
+}
+
+export default function NewsCard({ article, variant = 'grid' }: { article: CardArticle; variant?: 'hero' | 'grid' | 'row' }) {
+  const { locale, s } = useLocale();
+  const title = locale === 'rw' ? article.titleKiny : article.title;
+  const excerpt = locale === 'rw' ? article.excerptKiny : article.excerpt;
+  const catLabel = locale === 'rw' ? s.categories[article.category].rw : s.categories[article.category].en;
+  const full: Article | null = isFull(article) ? article : null;
+  const legacy: NewsArticle | null = full ? null : (article as NewsArticle);
+  const sourceName = full ? (full.sources[0]?.name ?? 'Ibihe') : (legacy?.source ?? 'Ibihe');
+  const href = `/amakuru/${article.id}`;
 
   if (variant === 'hero') {
     return (
-      <div className="relative rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-[#00c853]/40 transition-all">
-        <div className="h-52 bg-gradient-to-br from-[#00c853]/30 via-[#004d1f] to-[#001a0a] flex items-end p-5 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #00c853 0%, transparent 60%)' }} />
-          <div className="relative z-10">
-            <div className="flex gap-2 mb-2">
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${catColor}`}>
-                {CATEGORY_LABELS[article.category] || article.category}
+      <Link href={href} className="block relative rounded-2xl overflow-hidden border border-white/10 group hover:border-[#00c853]/40 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00c853]">
+        <article>
+          <div className="min-h-44 bg-gradient-to-br from-[#00c853]/25 via-[#0d3a1e] to-[#001a0a] flex items-end p-5 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #00c853 0%, transparent 60%)' }} />
+            <div className="relative z-10">
+              <div className="flex gap-2 mb-2 flex-wrap">
+                <CategoryBadge category={article.category} label={catLabel} />
+                {full && <ContentStatusBadge status={full.status} />}
+              </div>
+              <h2 className="text-white font-bold text-xl leading-snug">{title}</h2>
+            </div>
+          </div>
+          <div className="p-4 bg-[#0d1a11]">
+            <p className="text-white/60 text-sm leading-relaxed mb-3 line-clamp-2">{excerpt}</p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/50">{sourceName}</span>
+              <span className="flex items-center gap-1 text-white/40">
+                <Clock size={11} aria-hidden="true" />
+                {timeAgo(article.publishedAt)}
               </span>
-              {article.isAIPrediction && (
-                <span className="inline-flex items-center gap-1 text-[11px] bg-[#00c853]/20 text-[#00c853] border border-[#00c853]/30 px-2 py-0.5 rounded">
-                  <Brain size={10} /> AI
-                </span>
-              )}
-            </div>
-            <h2 className="text-white font-bold text-xl leading-snug">{article.titleKiny}</h2>
-          </div>
-        </div>
-        <div className="p-4 bg-[#0d1a11]">
-          <p className="text-white/60 text-sm leading-relaxed mb-3">{article.excerptKiny}</p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {article.hasPrediction && article.prediction && (
-                <DirectionBadge direction={article.prediction.direction} percentChange={article.prediction.percentChange} />
-              )}
-              {article.isAIPrediction && article.prediction && (
-                <span className="text-[11px] text-[#00c853]/70">{article.prediction.confidence}% by'ukuri</span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 text-white/40 text-xs">
-              <span className="flex items-center gap-1"><Clock size={11} />{timeAgo}</span>
-              <span className="flex items-center gap-1"><Eye size={11} />{article.views.toLocaleString()}</span>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+      </Link>
     );
   }
 
   return (
-    <div className="bg-[#111] border border-white/10 rounded-xl p-4 hover:border-white/20 hover:bg-[#161616] transition-all cursor-pointer group">
-      <div className="flex items-start gap-2 mb-2">
-        <span className={`text-[10px] font-medium px-2 py-0.5 rounded border shrink-0 ${catColor}`}>
-          {CATEGORY_LABELS[article.category] || article.category}
-        </span>
-        {article.isAIPrediction && (
-          <span className="inline-flex items-center gap-1 text-[10px] bg-[#00c853]/10 text-[#00c853] border border-[#00c853]/20 px-1.5 py-0.5 rounded">
-            <Brain size={9} /> AI
-          </span>
-        )}
-      </div>
-      <h3 className="text-white text-sm font-medium leading-snug mb-2 group-hover:text-[#00c853] transition-colors">
-        {article.titleKiny}
-      </h3>
-      {article.hasPrediction && article.prediction && (
-        <div className="mb-2">
-          <DirectionBadge direction={article.prediction.direction} percentChange={article.prediction.percentChange} />
+    <Link href={href} className="block bg-[#111] border border-white/10 rounded-xl p-4 hover:border-white/25 hover:bg-[#161616] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00c853]">
+      <article>
+        <div className="flex items-start gap-2 mb-2 flex-wrap">
+          <CategoryBadge category={article.category} label={catLabel} />
+          {full && <ContentStatusBadge status={full.status} size="xs" />}
+          {full?.isMock && (
+            <span className="text-[10px] text-amber-300/80 border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 rounded">
+              demo
+            </span>
+          )}
         </div>
-      )}
-      <div className="flex items-center justify-between text-xs text-white/40">
-        <span>{article.source}</span>
-        <span className="flex items-center gap-1"><Clock size={10} />{timeAgo}</span>
-      </div>
-    </div>
+        <h3 className="text-white text-[15px] font-semibold leading-snug mb-1.5 group-hover:text-[#00c853] transition-colors">
+          {title}
+        </h3>
+        {variant === 'row' && <p className="text-white/55 text-[13px] leading-relaxed mb-2 line-clamp-2">{excerpt}</p>}
+        <div className="flex items-center justify-between text-xs text-white/40">
+          <span className="inline-flex items-center gap-1">
+            {sourceName}
+            {full && full.sources.length > 1 && <span aria-label={`+${full.sources.length - 1}`}>+{full.sources.length - 1}</span>}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock size={10} aria-hidden="true" />
+            {timeAgo(article.publishedAt)}
+          </span>
+        </div>
+      </article>
+    </Link>
+  );
+}
+
+export function SourceLink({ name, url }: { name: string; url: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-[#00c853] hover:underline text-[13px]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {name}
+      <ExternalLink size={12} aria-hidden="true" />
+    </a>
   );
 }

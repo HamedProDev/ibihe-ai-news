@@ -1,0 +1,148 @@
+/**
+ * UI chrome dictionaries — Kinyarwanda-first, English second.
+ * Article/market content carries its own bilingual fields; this covers
+ * navigation, buttons, states and labels.
+ */
+
+export type Locale = 'rw' | 'en';
+
+export const STRINGS = {
+  nav: {
+    home: { rw: 'Ahabanza', en: 'Home' },
+    news: { rw: 'Amakuru', en: 'News' },
+    agriculture: { rw: 'Ubuhinzi', en: 'Agriculture' },
+    markets: { rw: 'Isoko', en: 'Markets' },
+    weather: { rw: 'Ikirere', en: 'Weather' },
+    economy: { rw: 'Ubukungu', en: 'Economy' },
+    explainers: { rw: 'Ibisobanuro', en: 'Explainers' },
+    forecasts: { rw: 'Ibimenyetso', en: 'Forecasts' },
+    ask: { rw: 'Baza Ibihe', en: 'Ask Ibihe' },
+  },
+  search: {
+    placeholder: { rw: 'Shakisha amakuru, ibiciro, akarere…', en: 'Search news, prices, districts…' },
+    label: { rw: 'Shakisha', en: 'Search' },
+    noResults: { rw: 'Nta cyabonetse. Gerageza andi magambo.', en: 'No results. Try different words.' },
+  },
+  home: {
+    leadStory: { rw: 'Inkuru Nkuru', en: 'Lead story' },
+    todayEssentials: { rw: 'By’ingenzi uyu munsi', en: 'Essentials today' },
+    latestNews: { rw: 'Amakuru agezweho', en: 'Latest news' },
+    marketSnapshot: { rw: 'Isoko muri make', en: 'Market snapshot' },
+    weatherAgri: { rw: 'Ikirere → Ubuhinzi', en: 'Weather → Farming' },
+    forecasts: { rw: 'Ibiteganyijwe', en: 'Forecasts' },
+    briefing: { rw: 'Incamake y’umunsi', en: 'Daily briefing' },
+    viewAll: { rw: 'Reba byose', en: 'View all' },
+    askTeaser: { rw: 'Baza Ibihe icyo ushaka kumenya', en: 'Ask Ibihe anything' },
+  },
+  article: {
+    whatHappened: { rw: 'Ni iki cyabaye?', en: 'What happened?' },
+    keyPoints: { rw: 'Mu magambo make', en: 'In brief' },
+    whyMatters: { rw: 'Kuki ari ingenzi?', en: 'Why does it matter?' },
+    evidence: { rw: 'Ibimenyetso', en: 'Evidence' },
+    related: { rw: 'Inkuru zijyanye', en: 'Related stories' },
+    timeline: { rw: 'Uko byagiye bikurikirana', en: 'Timeline' },
+    readOriginal: { rw: 'Soma inkomoko', en: 'Read original' },
+    fetchedAt: { rw: 'Byafashwe', en: 'Fetched' },
+    publishedAt: { rw: 'Byatangajwe', en: 'Published' },
+  },
+  status: {
+    verified: { rw: 'Inkuru yizewe', en: 'Verified report' },
+    developing: { rw: 'Irakomeje', en: 'Developing' },
+    'multi-source': { rw: 'Inkomoko nyinshi', en: 'Multiple sources' },
+    analysis: { rw: 'Isesengura', en: 'Analysis' },
+    forecast: { rw: 'Ihanura', en: 'Forecast' },
+    opinion: { rw: 'Igitekerezo', en: 'Opinion' },
+  },
+  ai: {
+    generated: { rw: 'Byakozwe na AI', en: 'AI-generated' },
+    ruleBased: { rw: 'Amategeko ya mudasobwa', en: 'Rule-based' },
+    reviewed: { rw: 'Byagenzuwe', en: 'Reviewed' },
+    unreviewed: { rw: 'Ntibira aegenzurwa', en: 'Unreviewed' },
+  },
+  data: {
+    demo: { rw: 'Amakuru y’urugero (demo)', en: 'Demo data' },
+    demoExplain: {
+      rw: 'Aya ni amakuru y’urugero yo kwerekana — si amakuru nyayo. Azasimbuzwa n’amakuru nyayo vuba.',
+      en: 'This is sample data for illustration — not real data. It will be replaced by live data.',
+    },
+    live: { rw: 'Amakuru nyayo', en: 'Live data' },
+    stale: { rw: 'Amakuru ashaje', en: 'Stale data' },
+    unavailable: { rw: 'Ntibibonetse ubu', en: 'Unavailable right now' },
+    observedAt: { rw: 'Byabonwe', en: 'Observed' },
+  },
+  states: {
+    loading: { rw: 'Biratangazwa…', en: 'Loading…' },
+    error: { rw: 'Habaye ikosa', en: 'Something went wrong' },
+    retry: { rw: 'Ongera ugerageze', en: 'Try again' },
+    empty: { rw: 'Nta cyabonetse hano', en: 'Nothing here yet' },
+  },
+  markets: {
+    title: { rw: 'Isoko ry’ibiribwa', en: 'Food markets' },
+    commodity: { rw: 'Igicuruzwa', en: 'Commodity' },
+    district: { rw: 'Akarere', en: 'District' },
+    market: { rw: 'Isoko', en: 'Market' },
+    all: { rw: 'Byose', en: 'All' },
+    trend30d: { rw: 'Umurongo w’iminsi 30', en: '30-day trend' },
+    latestPrice: { rw: 'Igiciro giheruka', en: 'Latest price' },
+    perKg: { rw: 'ku kiro', en: 'per kg' },
+    originalUnit: { rw: 'Ingero y’aho', en: 'Original unit' },
+    observations: { rw: 'Ibipimo', en: 'Observations' },
+  },
+  weather: {
+    title: { rw: 'Ikirere n’ubuhinzi', en: 'Weather & farming' },
+    observation: { rw: 'Ibyabonwe', en: 'Observed' },
+    forecast: { rw: 'Iteganyagihe', en: 'Forecast' },
+    aiReading: { rw: 'Ibisobanuro bya AI', en: 'AI interpretation' },
+    rainOutlook: { rw: ' uko imvura iteye', en: 'Rainfall outlook' },
+    implications: { rw: 'Ingaruka ku bihingwa', en: 'Crop implications' },
+    advice: { rw: 'Inama', en: 'Recommendations' },
+    uncertainty: { rw: 'Kutamenya', en: 'Uncertainty' },
+  },
+  forecasts: {
+    title: { rw: 'Ibimenyetso by’ubuhinzi', en: 'Agriculture forecasts' },
+    outlook: { rw: 'uko bizamera', en: 'outlook' },
+    probability: { rw: 'Amahirwe', en: 'Probability' },
+    confidence: { rw: 'Icyizere', en: 'Confidence' },
+    evidence: { rw: 'Bishingiye kuri', en: 'Based on' },
+    assumptions: { rw: 'Ibyizerwa', en: 'Assumptions' },
+    invalidators: { rw: 'Ibyabyoshya', en: 'Could be invalidated by' },
+    trackRecord: { rw: 'Uko twagiye tubigenza', en: 'Track record' },
+    accuracy: { rw: 'Ukuri', en: 'Accuracy' },
+    evaluated: { rw: 'Byasuzumwe', en: 'Evaluated' },
+    pending: { rw: 'Bitegereje', en: 'Pending' },
+    model: { rw: 'Icyitegererezo', en: 'Model' },
+    basedOn: { rw: 'Bishingiye ku murongo w’ibiciro, ibihe by’isarura, n’iteganyagihe ry’imvura.', en: 'Based on recent price movement, seasonality and rainfall outlook.' },
+  },
+  ask: {
+    placeholder: { rw: 'Baza… urugero: Kuki ibiciro by’ibirayi biri kuzamuka?', en: 'Ask… e.g. Why are potato prices rising?' },
+    send: { rw: 'Ohereza', en: 'Send' },
+    sources: { rw: 'Inkomoko', en: 'Sources' },
+    thinking: { rw: 'Ibihe iratekereza…', en: 'Ibihe is thinking…' },
+    examples: {
+      rw: ['Ni ayahe makuru y’ingenzi yabaye uyu munsi?', 'Kuki ibiciro by’ibirayi biri kuzamuka?', 'Ni iki gishobora kugira ingaruka ku buhinzi muri iki cyumweru?'],
+      en: ['What are today’s most important stories?', 'Why are potato prices rising?', 'What could affect farming this week?'],
+    },
+  },
+  categories: {
+    all: { rw: 'Byose', en: 'All' },
+    ubuhinzi: { rw: 'Ubuhinzi', en: 'Agriculture' },
+    politiki: { rw: 'Politiki', en: 'Politics' },
+    ubukungu: { rw: 'Ubukungu', en: 'Economy' },
+    ikoranabuhanga: { rw: 'Ikoranabuhanga', en: 'Technology' },
+    ubuzima: { rw: 'Ubuzima', en: 'Health' },
+    imikino: { rw: 'Imikino', en: 'Sports' },
+    amahanga: { rw: 'Amahanga', en: 'World' },
+    imvurugano: { rw: 'Imvururu', en: 'Breaking' },
+  },
+  footer: {
+    tagline: { rw: 'Amakuru, ibimenyetso n’ubwenge bushingiye ku bimenyetso — u Rwanda', en: 'News, evidence and intelligence — Rwanda' },
+    method: { rw: 'Uburyo dukora', en: 'Our method' },
+    sourcesNote: { rw: 'Buri nkuru yerekana inkomoko yayo. Ibihe ntayihimbira amakuru.', en: 'Every story shows its sources. Ibihe never invents news.' },
+  },
+} as const;
+
+export type Strings = typeof STRINGS;
+
+export function pick(locale: Locale, entry: { rw: string; en: string }): string {
+  return locale === 'rw' ? entry.rw : entry.en;
+}

@@ -1,24 +1,47 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Header from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { LanguageProvider } from '@/components/i18n/LanguageProvider';
 
 export const metadata: Metadata = {
-  title: 'Ibihe AI News — Amakuru n\'Ibyahanuwe',
-  description: 'Urubuga rw\'amakuru rugizwe na AI mu Kinyarwanda — inkuru, ibyahanuwe, n\'amasoko',
+  title: {
+    default: 'Ibihe AI News — Amakuru, Isoko n’Ibimenyetso',
+    template: '%s — Ibihe AI News',
+  },
+  description:
+    'Urubuga rw’amakuru mu Kinyarwanda: inkuru zizewe, ibiciro by’isoko, ikirere n’ubuhinzi, n’ihanura ribonerana. What happened → why it matters → what data says → what could happen next.',
+  keywords: ['amakuru', 'Rwanda news', 'Kinyarwanda', 'isoko', 'ibiciro', 'ubuhinzi', 'ikirere', 'forecast'],
+  openGraph: {
+    title: 'Ibihe AI News — Rwanda Information Intelligence',
+    description: 'Amakuru yizewe, ibimenyetso, n’ihanura ribonerana — mu Kinyarwanda.',
+    locale: 'rw_RW',
+    alternateLocale: 'en_US',
+    type: 'website',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0a',
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="rw" className="dark">
       <body className="bg-[#0a0a0a] text-white min-h-screen antialiased">
-        <Header />
-        {children}
-        <footer className="border-t border-white/10 mt-12 py-8 text-center text-white/30 text-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <p className="font-bold text-white/60 mb-1">Ibihe AI News</p>
-            <p>Amakuru n'ibyahanuwe bishingiye ku ikoranabuhanga rya AI — Rwanda 🇷🇼</p>
-          </div>
-        </footer>
+        <LanguageProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-[#00c853] focus:text-black focus:px-3 focus:py-2 focus:rounded-lg text-sm font-medium"
+          >
+            Jya ku biraimo
+          </a>
+          <Header />
+          <div id="main-content">{children}</div>
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );

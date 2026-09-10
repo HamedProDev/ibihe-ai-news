@@ -1,166 +1,195 @@
 'use client';
-import { useState } from 'react';
-import { useNews, usePredictions, useMarket } from '@/hooks/useNews';
+
+import Link from 'next/link';
+import { Flame, LineChart, CloudSun, Telescope, Newspaper } from 'lucide-react';
+import { useNews, useBriefing } from '@/hooks/useNews';
+import { useMarketData } from '@/hooks/useMarket';
+import { useForecasts } from '@/hooks/useForecasts';
+import { useWeather } from '@/hooks/useWeather';
 import NewsCard from '@/components/news/NewsCard';
-import PredictionPanel from '@/components/predictions/PredictionPanel';
-import WeatherWidget from '@/components/weather/WeatherWidget';
-import MarketTicker from '@/components/predictions/MarketTicker';
-import { Brain, Flame, Filter } from 'lucide-react';
+import { BriefingCard } from '@/components/news/BriefingCard';
+import { MarketTrendCard } from '@/components/markets/MarketCards';
+import { ForecastCard } from '@/components/forecasts/ForecastCard';
+import { AskIbihe } from '@/components/ai/AskIbihe';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { DemoBanner } from '@/components/ui/Badges';
+import { EmptyState, ErrorState, LoadingSkeleton } from '@/components/ui/States';
+import { useLocale } from '@/components/i18n/LanguageProvider';
 
-const CATEGORIES = [
-  { key: 'all', label: 'Byose' },
-  { key: 'ubuhinzi', label: 'Ubuhinzi' },
-  { key: 'politiki', label: 'Politiki' },
-  { key: 'ubukungu', label: 'Ubukungu' },
-  { key: 'ikoranabuhanga', label: 'Ikoranabuhanga' },
-  { key: 'ubuzima', label: 'Ubuzima' },
-  { key: 'amahanga', label: 'Amahanga' },
-];
+const QUICK_CATS = ['ubuhinzi', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'politiki', 'amahanga'] as const;
 
-const TRENDING = [
-  'Ibirayi: ibiciro bigwa 5%?',
-  'Amerika na intambara yo guhagarika',
-  'MTN 5G Kigali: ubwangu bushya',
-  'USD/RWF: ifaranga riguma',
-  'Ibishyimbo Nyagatare: amahirwe mashya',
-];
+function QuickCategories() {
+  const { s, locale } = useLocale();
+  return (
+    <nav aria-label={locale === 'rw' ? 'Ibyiciro' : 'Categories'} className="flex gap-2 flex-wrap mb-6 pb-4 border-b border-white/10">
+      {QUICK_CATS.map((c) => (
+        <Link
+          key={c}
+          href={`/amakuru?category=${c}`}
+          className="px-4 py-1.5 rounded-full text-sm font-medium border bg-transparent text-white/60 border-white/15 hover:border-white/30 hover:text-white transition-all"
+        >
+          {locale === 'rw' ? s.categories[c].rw : s.categories[c].en}
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
-export default function HomePage() {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const { articles, loading: newsLoading } = useNews(activeCategory === 'all' ? undefined : activeCategory);
-  const { predictions, loading: predLoading } = usePredictions();
-  const { prices, weather, loading: marketLoading } = useMarket();
+function LeadSection() {
+  const { s, locale } = useLocale();
+  const { full, loading, error, retry, dataMode } = useNews();
+  const hero = full[0];
+  const essentials = full.slice(1, 5);
 
-  const heroArticle = articles[0];
-  const gridArticles = articles.slice(1, 5);
-  const listArticles = articles.slice(5);
+  if (loading) return <LoadingSkeleton lines={3} />;
+  if (error) return <ErrorState error={error} onRetry={retry} />;
+  if (!hero) return <EmptyState />;
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-6">
-      {/* Category filter */}
-      <div className="flex gap-2 flex-wrap mb-6 pb-4 border-b border-white/10">
-        {CATEGORIES.map(cat => (
-          <button key={cat.key}
-            onClick={() => setActiveCategory(cat.key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-              activeCategory === cat.key
-                ? 'bg-[#00c853] text-black border-[#00c853]'
-                : 'bg-transparent text-white/60 border-white/15 hover:border-white/30 hover:text-white'
-            }`}>
-            {cat.label}
-          </button>
-        ))}
+    <div>
+      <DemoBanner mode={dataMode} />
+      <div className="flex items-center gap-2 mb-3">
+        <Flame size={14} className="text-[#00c853]" aria-hidden="true" />
+        <span className="text-white/60 text-xs font-medium uppercase tracking-widest">
+          {locale === 'rw' ? s.home.leadStory.rw : s.home.leadStory.en}
+        </span>
       </div>
+      <NewsCard article={hero} variant="hero" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Main content */}
-        <div>
-          {/* Hero */}
-          {heroArticle && !newsLoading && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Flame size={14} className="text-[#00c853]" />
-                <span className="text-white/60 text-xs font-medium uppercase tracking-widest">Inkuru Nkuru</span>
-              </div>
-              <NewsCard article={heroArticle} variant="hero" />
-            </div>
-          )}
-
-          {/* AI Predictions highlight bar */}
-          {!predLoading && predictions.length > 0 && (
-            <div className="mb-6 bg-gradient-to-r from-[#00c853]/10 to-transparent border border-[#00c853]/20 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Brain size={16} className="text-[#00c853]" />
-                <span className="text-[#00c853] text-sm font-semibold">Ibyahanuwe na AI — Uyu Munsi</span>
-                <span className="ml-auto text-[11px] text-white/40">Ibyahanuwe bishingiye ku makuru</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {predictions.slice(0, 3).map(pred => (
-                  <div key={pred.id} className="bg-black/20 rounded-lg p-3">
-                    <p className="text-white/60 text-xs mb-1 truncate">{pred.topicKiny}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white text-sm font-semibold">
-                        {pred.percentChange ? `${pred.percentChange > 0 ? '+' : ''}${pred.percentChange}%` : pred.timeframe}
-                      </span>
-                      <span className="text-[10px] text-white/40">{pred.confidence}% ukuri</span>
-                    </div>
-                    {pred.predictedValue && (
-                      <p className={`text-xs font-medium mt-1 ${pred.direction === 'down' ? 'text-red-400' : pred.direction === 'up' ? 'text-green-400' : 'text-amber-400'}`}>
-                        → {pred.predictedValue}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Grid articles */}
-          {!newsLoading && gridArticles.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Filter size={14} className="text-white/40" />
-                <span className="text-white/60 text-xs font-medium uppercase tracking-widest">Inkuru Zihambaye</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {gridArticles.map(article => (
-                  <NewsCard key={article.id} article={article} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* List articles */}
-          {!newsLoading && listArticles.length > 0 && (
-            <div className="space-y-2">
-              {listArticles.map(article => (
-                <NewsCard key={article.id} article={article} />
-              ))}
-            </div>
-          )}
-
-          {newsLoading && (
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <aside className="space-y-5">
-          {/* Predictions */}
-          {!predLoading && predictions.length > 0 && (
-            <PredictionPanel predictions={predictions} />
-          )}
-
-          {/* Weather */}
-          {!marketLoading && weather && (
-            <WeatherWidget weather={weather} />
-          )}
-
-          {/* Market prices */}
-          {!marketLoading && prices.length > 0 && (
-            <MarketTicker prices={prices} />
-          )}
-
-          {/* Trending */}
-          <div className="bg-[#111] border border-white/10 rounded-2xl p-4">
-            <h3 className="text-white text-sm font-semibold mb-3 flex items-center gap-2">
-              <Flame size={14} className="text-orange-400" />
-              Ibiganirwaho Cyane
-            </h3>
-            <div className="space-y-1">
-              {TRENDING.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0 cursor-pointer group">
-                  <span className="text-white/20 text-sm font-bold w-5 shrink-0">{i + 1}</span>
-                  <span className="text-white/70 text-sm group-hover:text-[#00c853] transition-colors leading-snug">{item}</span>
-                </div>
-              ))}
-            </div>
+      {essentials.length > 0 && (
+        <div className="mt-6">
+          <SectionHeader
+            title={locale === 'rw' ? s.home.todayEssentials.rw : s.home.todayEssentials.en}
+            href="/amakuru"
+            icon={<Newspaper size={15} className="text-[#00c853]" aria-hidden="true" />}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {essentials.map((a) => (
+              <NewsCard key={a.id} article={a} />
+            ))}
           </div>
-        </aside>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MarketSection() {
+  const { s, locale } = useLocale();
+  const { trends, loading, error, retry, dataMode } = useMarketData({ windowDays: 30 });
+  return (
+    <section aria-labelledby="home-markets" className="mt-8">
+      <div id="home-markets">
+        <SectionHeader
+          title={locale === 'rw' ? s.home.marketSnapshot.rw : s.home.marketSnapshot.en}
+          href="/isoko"
+          icon={<LineChart size={15} className="text-[#00c853]" aria-hidden="true" />}
+        />
+      </div>
+      {loading ? (
+        <LoadingSkeleton lines={2} />
+      ) : error ? (
+        <ErrorState error={error} onRetry={retry} />
+      ) : trends.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div>
+          <DemoBanner mode={dataMode} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {trends.slice(0, 3).map((t) => (
+              <MarketTrendCard key={t.commodity} trend={t} />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ForecastSection() {
+  const { s, locale } = useLocale();
+  const { forecasts, loading, error, retry } = useForecasts({ horizon: '14d' });
+  const items = forecasts.filter((f) => f.evaluation === 'pending').slice(0, 2);
+  return (
+    <section aria-labelledby="home-fc" className="mt-8">
+      <div id="home-fc">
+        <SectionHeader
+          title={locale === 'rw' ? s.home.forecasts.rw : s.home.forecasts.en}
+          href="/ibimenyetso"
+          icon={<Telescope size={15} className="text-cyan-300" aria-hidden="true" />}
+        />
+      </div>
+      {loading ? (
+        <LoadingSkeleton lines={2} />
+      ) : error ? (
+        <ErrorState error={error} onRetry={retry} />
+      ) : items.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {items.map((f) => (
+            <ForecastCard key={f.id} forecast={f} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Sidebar() {
+  const { s, locale } = useLocale();
+  const { briefing, loading: bLoading, error: bError, retry: bRetry } = useBriefing();
+  const { weather, advisory, loading: wLoading } = useWeather('Gasabo');
+
+  return (
+    <aside className="space-y-5">
+      {bLoading ? (
+        <LoadingSkeleton lines={1} />
+      ) : bError ? (
+        <ErrorState error={bError} onRetry={bRetry} />
+      ) : briefing ? (
+        <BriefingCard briefing={briefing} />
+      ) : null}
+
+      <section aria-labelledby="home-wx" className="bg-[#0a0e1a] border border-blue-500/20 rounded-2xl p-4">
+        <h2 id="home-wx" className="flex items-center gap-2 text-white text-sm font-semibold mb-2">
+          <CloudSun size={15} className="text-blue-300" aria-hidden="true" />
+          {locale === 'rw' ? s.home.weatherAgri.rw : s.home.weatherAgri.en}
+        </h2>
+        {wLoading ? (
+          <div className="h-16 bg-white/5 rounded-lg animate-pulse" aria-hidden="true" />
+        ) : weather && weather.available ? (
+          <Link href="/ikirere?district=Gasabo" className="block group">
+            <p className="text-white/80 text-sm leading-relaxed group-hover:text-white">
+              {advisory
+                ? locale === 'rw' ? advisory.rainfallOutlookKiny : advisory.rainfallOutlookEn
+                : `${weather.district}: ${Math.round(weather.observation?.tempC ?? 0)}°`}
+            </p>
+            <p className="text-[#00c853] text-[13px] font-medium mt-1.5 group-hover:underline">
+              {locale === 'rw' ? 'Reba inama z’ubuhinzi' : 'See farming advice'} →
+            </p>
+          </Link>
+        ) : (
+          <p className="text-white/45 text-[13px]">{locale === 'rw' ? s.data.unavailable.rw : s.data.unavailable.en}</p>
+        )}
+      </section>
+
+      <AskIbihe compact />
+    </aside>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <main className="max-w-7xl mx-auto px-4 py-6">
+      <QuickCategories />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-8">
+        <div className="min-w-0">
+          <LeadSection />
+          <MarketSection />
+          <ForecastSection />
+        </div>
+        <Sidebar />
       </div>
     </main>
   );

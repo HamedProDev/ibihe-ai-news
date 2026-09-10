@@ -6,7 +6,12 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/unit/*.test.ts",
+    "worker:ingest": "node workers/ingestion/run.ts",
+    "worker:forecasts": "node workers/forecasting/run.ts",
+    "worker:weather": "node workers/weather/run.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",
