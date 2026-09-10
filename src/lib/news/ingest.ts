@@ -13,7 +13,8 @@ import { contentHash, dayBucket, findDuplicates } from './deduplicate.ts';
 import { extractEntities } from './entities.ts';
 import { extractKeyPoints, extractiveProvenance } from './summarize.ts';
 import { findSource } from './source-registry.ts';
-import { readStore, writeStore } from '../db/json-store.ts';
+import { listArticlesRepo, upsertArticlesRepo } from '../db/repos/articles.ts';
+import { getMeta, recordIngestRun, setMeta } from '../db/repos/meta.ts';
 
 export const ARTICLES_STORE = 'articles';
 export const INGEST_META_STORE = 'ingest-meta';
@@ -105,8 +106,8 @@ export interface IngestResult {
 /** Run one ingestion pass over all enabled feeds. */
 export async function runIngestion(): Promise<IngestResult> {
   const fetchedAt = new Date().toISOString();
-  const [existing, results] = await Promise.all([readStore<Article[]>(ARTICLES_STORE), fetchAllFeeds()]);
-  const stored: Article[] = existing?.value ?? [];
+  const [existing, results] = await Promise.all([listArticlesRepo({ limit: 500 }), fetchAllFeeds()]);
+  const stored: Article[] = existing.items ?? [];
   const byId = new Map(stored.map((a) => [a.id, a]));
   const errors: string[] = [];
   let added = 0;
@@ -149,24 +150,26 @@ export async function runIngestion(): Promise<IngestResult> {
   }
 
   const all = [...byId.values()].sort((x, y) => +new Date(y.publishedAt) - +new Date(x.publishedAt));
-  const capped = all.slice(0, 500); // retention cap; history beyond this needs a real DB.
-  await writeStore(ARTICLES_STORE, capped);
+  const capped = all.slice(0, 500); // retention cap; production should archive instead.
+  await upsertArticlesRepo(capped);
 
+  const prevMeta = await getMeta<IngestMeta>(INGEST_META_STORE);
   const meta: IngestMeta = {
     lastRunAt: fetchedAt,
-    lastSuccessAt: errors.length < results.length ? fetchedAt : (existing ? (await readStore<IngestMeta>(INGEST_META_STORE))?.value.lastSuccessAt ?? null : null),
+    lastSuccessAt: errors.length < results.length ? fetchedAt : (prevMeta?.lastSuccessAt ?? null),
     totalStored: capped.length,
     addedLastRun: added,
     errors: errors.slice(0, 10),
   };
-  await writeStore(INGEST_META_STORE, meta);
+  await setMeta(INGEST_META_STORE, meta);
+  await recordIngestRun({ startedAt: fetchedAt, finishedAt: new Date().toISOString(), added, total: capped.length, errors: errors.slice(0, 10) });
   return { added, total: capped.length, errors, fetchedAt };
 }
 
 export async function readStoredArticles(): Promise<Article[]> {
-  return (await readStore<Article[]>(ARTICLES_STORE))?.value ?? [];
+  return (await listArticlesRepo({ limit: 500 })).items;
 }
 
 export async function readIngestMeta(): Promise<IngestMeta | null> {
-  return (await readStore<IngestMeta>(INGEST_META_STORE))?.value ?? null;
+  return getMeta<IngestMeta>(INGEST_META_STORE);
 }

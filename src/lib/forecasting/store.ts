@@ -9,7 +9,7 @@
 import type { DataMode } from '../../types/provenance';
 import type { Forecast, TrackRecord } from '../../types/forecasting';
 import type { CommodityId } from '../../types/market';
-import { readStore, writeStore } from '../db/json-store.ts';
+import { listForecastsRepo, saveForecastsRepo } from '../db/repos/forecasts.ts';
 import { COMMODITY_IDS } from '../market/commodities.ts';
 import { readRealObservations } from '../market/store.ts';
 import { DEMO_OBSERVATIONS } from '../market/demo-observations.ts';
@@ -23,11 +23,11 @@ import {
 export const FORECAST_STORE = 'forecasts';
 
 async function readStoredForecasts(): Promise<Forecast[]> {
-  return (await readStore<Forecast[]>(FORECAST_STORE))?.value ?? [];
+  return listForecastsRepo();
 }
 
 async function persistForecasts(list: Forecast[]): Promise<void> {
-  await writeStore(FORECAST_STORE, list.slice(-1000));
+  await saveForecastsRepo(list);
 }
 
 /**

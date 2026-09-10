@@ -1,8 +1,22 @@
 import { NextRequest } from 'next/server';
 import { askIbihe } from '@/lib/ai/ask';
 import { ok, err } from '@/lib/api/envelope';
+import { clientKey, globalLimiter } from '@/lib/api/rate-limit';
+
+const ASK_LIMIT = { limit: 30, windowMs: 60_000 };
 
 export async function POST(req: NextRequest) {
+  const verdict = globalLimiter.check(clientKey(req, 'ask'), ASK_LIMIT);
+  if (!verdict.allowed) {
+    const res = err(
+      'rate-limited',
+      'Wababajije cyane. Tegereza gato wongere.',
+      'Too many questions. Please wait a moment and retry.',
+      429,
+    );
+    res.headers.set('Retry-After', String(Math.ceil(verdict.retryAfterMs / 1000)));
+    return res;
+  }
   try {
     const body: unknown = await req.json().catch(() => null);
     const question = typeof body === 'object' && body !== null && 'question' in body

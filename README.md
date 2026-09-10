@@ -124,10 +124,92 @@ evidence is insufficient — instead of hallucinating.
 Local caches live in `.data/` (gitignored). History is append-only:
 forecasts and market observations are never silently overwritten.
 
+## Production runbook
+
+### 1. Database (Postgres)
+
+Without `DATABASE_URL` the app runs on the JSON file store (`.data/`).
+For production, use Postgres (local, Supabase, or Neon):
+
+```bash
+# Local Postgres:
+docker compose up -d db
+export DATABASE_URL=postgres://ibihe:ibihe@localhost:5432/ibihe
+
+# Apply migrations (safe to re-run, tracked in schema_migrations):
+npm run db:migrate
+```
+
+Repositories (`src/lib/db/repos/`) use Postgres when configured and fall
+back to JSON automatically — including mid-request fallback if Postgres
+fails. Weather cache stays on the filesystem (ephemeral by design).
+
+### 2. Secrets
+
+```bash
+cp .env.example .env.local
+# Set: DATABASE_URL, ANTHROPIC_API_KEY (optional),
+#      CRON_SECRET, ADMIN_SECRET  (openssl rand -hex 32)
+```
+
+### 3. Real market data (replacing demo series)
+
+Three paths, in order of preference:
+
+1. **CSV feed** — set `ESOKO_FEED_URL` to a canonical-format CSV
+   (columns documented in `src/lib/market/sources/csv.ts`).
+   The scheduler pulls it via `GET /api/cron/market`.
+2. **Admin import** — paste CSV at `/admin/review` (market import card)
+   or `POST /api/market/import` with the `ADMIN_SECRET` bearer token.
+3. **RAB adapter** — intentionally a documented stub until a verified
+   machine-readable RAB endpoint exists; scrapers are not run blindly.
+
+Real rows (`isMock: false`) automatically flip markets/forecasts/ask to
+`live`/`mixed` data modes.
+
+### 4. AI enrichment + review queue
+
+```bash
+npm run worker:enrichment   # proposes RW translations/key points (needs ANTHROPIC_API_KEY)
+```
+
+Proposals land in the review queue — nothing auto-publishes. Review at
+`/admin/review` (ADMIN_SECRET gate): approve / edit / flag. Decisions are
+append-only history and mark article provenance as `reviewed`.
+
+### 5. Scheduler
+
+- **Vercel**: `vercel.json` crons call `/api/ingest?run=1` (6-hourly) and
+  `/api/cron/market` (daily). Set `CRON_SECRET` in project env vars —
+  Vercel sends it as the Bearer token automatically.
+- **Any cron**: `POST /api/ingest` and `GET /api/cron/market` with
+  `Authorization: Bearer $CRON_SECRET`, or run the workers directly:
+  `npm run worker:ingest`, `npm run worker:market`,
+  `npm run worker:forecasts`, `npm run worker:weather`.
+
+### 6. Deploy + verify
+
+```bash
+npm run build
+npm run start -- -p 3100 &
+BASE_URL=http://localhost:3100 npm run smoke   # pages + APIs + honesty checks
+```
+
+CI (`.github/workflows/ci.yml`) runs typecheck → lint → test →
+build → smoke on every push.
+
+### 7. Scaling notes (when needed)
+
+- Rate limiter is in-memory: move to Redis/Upstash for multi-instance.
+- `ADMIN_SECRET` is a shared team secret: replace with Auth.js before
+  multi-admin use.
+- Add Sentry (or equivalent) DSN for error monitoring in production.
+
 ## Roadmap
 
-- [ ] Real market observation source (RAB/e-Soko feed adapter)
-- [ ] Postgres/Supabase migration (repository interfaces are ready)
-- [ ] Human review queue for AI summaries/translations
+- [x] Real market observation source (e-Soko adapter + admin CSV import)
+- [x] Postgres/Supabase migration (dual-backend repositories)
+- [x] Human review queue for AI summaries/translations
 - [ ] PWA offline + SMS price alerts for farmers
 - [ ] Forecast model v0.2 with backtested calibration
+- [ ] Auth.js admin auth + Redis rate limiting

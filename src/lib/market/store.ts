@@ -7,24 +7,19 @@
  */
 import type { DataMode } from '../../types/provenance';
 import type { CommodityId, MarketFilters, MarketObservation, MarketTrend } from '../../types/market';
-import { readStore, writeStore } from '../db/json-store.ts';
+import { appendObservationsRepo, listObservationsRepo } from '../db/repos/observations.ts';
 import { DEMO_OBSERVATIONS } from './demo-observations.ts';
 import { buildTrend, latestByCommodity } from './stats.ts';
 
 export const MARKET_STORE = 'market-observations';
 
 export async function readRealObservations(): Promise<MarketObservation[]> {
-  return (await readStore<MarketObservation[]>(MARKET_STORE))?.value ?? [];
+  return listObservationsRepo();
 }
 
 /** Append real observations (validated by caller). History is append-only. */
 export async function appendObservations(rows: MarketObservation[]): Promise<number> {
-  const existing = await readRealObservations();
-  const ids = new Set(existing.map((o) => o.id));
-  const fresh = rows.filter((o) => !o.isMock && !ids.has(o.id));
-  if (fresh.length === 0) return existing.length;
-  await writeStore(MARKET_STORE, [...existing, ...fresh].slice(-5000));
-  return existing.length + fresh.length;
+  return appendObservationsRepo(rows);
 }
 
 export interface MarketQuery extends MarketFilters {

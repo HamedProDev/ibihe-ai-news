@@ -4,13 +4,14 @@
  * Read path: stored ingested articles (fresh) → stale cache → demo seeds.
  * The response ALWAYS declares its dataMode so the UI can label demo
  * content honestly. Refresh is best-effort and never blocks reads for long.
+ * Storage backend: Postgres when DATABASE_URL is set, else JSON file store.
  */
 import type { DataMode } from '../../types/provenance';
 import type { Article, NewsCategory, StoryCluster } from '../../types/news';
-import { readStore, storeAgeMs } from '../db/json-store.ts';
+import { listArticlesRepo, getArticleRepo } from '../db/repos/articles.ts';
 import { clusterArticles, relatedArticles } from './cluster.ts';
 import { DEMO_ARTICLES } from './demo-seeds.ts';
-import { ARTICLES_STORE, INGEST_META_STORE, readIngestMeta, runIngestion, type IngestMeta } from './ingest.ts';
+import { readIngestMeta, runIngestion, type IngestMeta } from './ingest.ts';
 
 export const CACHE_FRESH_MS = 30 * 60 * 1000;
 
@@ -43,21 +44,29 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
   }
 }
 
+function metaAgeMs(meta: IngestMeta | null): number {
+  if (!meta?.lastRunAt) return Number.POSITIVE_INFINITY;
+  return Date.now() - new Date(meta.lastRunAt).getTime();
+}
+
 export async function listArticles(query: ArticleQuery = {}): Promise<ArticleListResult> {
   const fetchedAt = new Date().toISOString();
-  const envelope = await readStore<Article[]>(ARTICLES_STORE);
-  const age = storeAgeMs(envelope);
-  let stored = envelope?.value ?? [];
+  let meta = await readIngestMeta();
+  let age = metaAgeMs(meta);
 
-  // Refresh in the background when stale; wait only briefly.
+  // Refresh when stale; wait only briefly, then serve whatever we have.
   if (age > CACHE_FRESH_MS) {
     const refreshed = await withTimeout(runIngestion(), 9000);
-    if (refreshed && refreshed.total > 0) {
-      stored = (await readStore<Article[]>(ARTICLES_STORE))?.value ?? stored;
+    if (refreshed) {
+      meta = await readIngestMeta();
+      age = metaAgeMs(meta);
     }
   }
 
-  const ingestMeta = await readIngestMeta();
+  const { category = 'all', limit = 20, offset = 0 } = query;
+  // Retention is capped at 500 rows, so one read serves listing + clustering.
+  const stored = (await listArticlesRepo({ limit: 500 })).items;
+
   let articles = stored;
   let dataMode: DataMode = 'live';
   if (articles.length === 0) {
@@ -67,7 +76,6 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
     dataMode = 'mixed'; // live articles, possibly stale
   }
 
-  const { category = 'all', limit = 20, offset = 0 } = query;
   const filtered = category === 'all' ? articles : articles.filter((a) => a.category === category);
   const clusters = clusterArticles(articles);
   const withCluster = filtered.map((a) => {
@@ -81,7 +89,7 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
     total: filtered.length,
     dataMode,
     fetchedAt,
-    ingestMeta,
+    ingestMeta: meta,
   };
 }
 
@@ -91,12 +99,14 @@ export async function getArticle(id: string): Promise<{
   cluster: StoryCluster | null;
   dataMode: DataMode;
 }> {
+  // Try direct lookup first (fast on Postgres); fall back to full listing
+  // (covers demo seeds when no live rows exist yet).
+  const direct = await getArticleRepo(id).catch(() => null);
   const { articles, clusters, dataMode } = await listArticles({ limit: 500 });
-  const article = articles.find((a) => a.id === id) ?? null;
+  const article = direct ?? articles.find((a) => a.id === id) ?? null;
   if (!article) return { article: null, related: [], cluster: null, dataMode };
   const cluster = clusters.find((c) => c.articleIds.includes(id)) ?? null;
-  const pool = articles;
-  const related = relatedArticles(article, pool, 4);
+  const related = relatedArticles(article, articles, 4);
   return { article, related, cluster, dataMode };
 }
 
@@ -106,5 +116,5 @@ export async function allArticles(): Promise<{ articles: Article[]; dataMode: Da
   return { articles: r.articles, dataMode: r.dataMode };
 }
 
-export { INGEST_META_STORE, readIngestMeta };
+export { readIngestMeta };
 export type { IngestMeta };
