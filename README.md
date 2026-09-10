@@ -140,6 +140,28 @@ export DATABASE_URL=postgres://ibihe:ibihe@localhost:5432/ibihe
 npm run db:migrate
 ```
 
+**Supabase setup (no local Postgres needed):**
+
+1. [supabase.com](https://supabase.com) → sign in → **New project** →
+   name it `ibihe-ai-news`, generate + **save** the DB password, pick
+   region **EU Central (Frankfurt)** (closest to Rwanda), wait ~2 min.
+2. **Project Settings → Database → Connection string → URI** — copy two:
+   - **Direct** (`db.xxx.supabase.co:5432`) → local dev + migrations.
+   - **Pooled / Supavisor** (`xxx.pooler.supabase.com:6543`, Transaction
+     mode) → production (Vercel). Replace `[YOUR-PASSWORD]` in both;
+     URL-encode special chars (`@` → `%40`). Migrations must run on the
+     **direct** URL (Supavisor transaction mode can't hold `BEGIN…COMMIT`
+     across statements reliably).
+3. `cp .env.example .env.local`, set `DATABASE_URL` to the **direct** URL,
+   plus `CRON_SECRET` / `ADMIN_SECRET` (`openssl rand -hex 32`).
+4. `npm run db:migrate` → expect `applied=1 … + 001_init.sql`.
+5. Verify in Supabase **Table Editor**: 7 tables
+   (`schema_migrations`, `articles`, `market_observations`, `forecasts`,
+   `review_items`, `ingest_runs`, `meta_store`).
+6. Restart dev, run one ingestion to fill articles:
+   `npm run worker:ingest` (or `POST /api/ingest` with the cron bearer).
+7. On Vercel: set `DATABASE_URL` to the **pooled** URL + the same secrets.
+
 Repositories (`src/lib/db/repos/`) use Postgres when configured and fall
 back to JSON automatically — including mid-request fallback if Postgres
 fails. Weather cache stays on the filesystem (ephemeral by design).

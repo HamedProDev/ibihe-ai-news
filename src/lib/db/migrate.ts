@@ -7,7 +7,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { pgQuery } from './postgres.ts';
+import { pgQuery, withPgClient } from './postgres.ts';
 
 export function migrationsDir(): string {
   return path.join(process.cwd(), 'supabase', 'migrations');
@@ -43,14 +43,22 @@ export async function migrate(): Promise<MigrateResult> {
       continue;
     }
     const sql = await fs.readFile(path.join(dir, file), 'utf8');
-    await pgQuery('BEGIN');
+    // One dedicated connection per file: BEGIN … COMMIT must never span
+    // pooled connections (breaks on Supavisor/pgBouncer transaction mode).
     try {
-      await pgQuery(sql);
-      await pgQuery('INSERT INTO schema_migrations (version) VALUES ($1)', [file]);
-      await pgQuery('COMMIT');
+      await withPgClient(async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query(sql);
+          await client.query('INSERT INTO schema_migrations (version) VALUES ($1)', [file]);
+          await client.query('COMMIT');
+        } catch (err) {
+          await client.query('ROLLBACK').catch(() => undefined);
+          throw err;
+        }
+      });
       applied.push(file);
     } catch (err) {
-      await pgQuery('ROLLBACK').catch(() => undefined);
       throw new Error(`[db] migration ${file} failed: ${err instanceof Error ? err.message : err}`);
     }
   }

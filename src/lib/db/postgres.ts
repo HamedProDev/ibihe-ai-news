@@ -8,7 +8,7 @@
  * - When disabled, repositories fall back to the JSON file store so the
  *   app runs anywhere with zero setup.
  */
-import { Pool, type QueryResult, type QueryResultRow } from 'pg';
+import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 
 if (typeof window !== 'undefined') {
   throw new Error('[db] postgres imported in browser — server-only');
@@ -49,6 +49,18 @@ export async function pgQuery<T extends QueryResultRow = QueryResultRow>(
   const p = pgPool();
   if (!p) throw new Error('[db] postgres is not configured (DATABASE_URL missing)');
   return p.query<T>(text, params as never[]);
+}
+
+/** Run work on one dedicated pooled connection (required for transactions). */
+export async function withPgClient<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const p = pgPool();
+  if (!p) throw new Error('[db] postgres is not configured (DATABASE_URL missing)');
+  const client = await p.connect();
+  try {
+    return await fn(client);
+  } finally {
+    client.release();
+  }
 }
 
 /** Backend label for observability / footers. */
