@@ -166,13 +166,19 @@ Repositories (`src/lib/db/repos/`) use Postgres when configured and fall
 back to JSON automatically — including mid-request fallback if Postgres
 fails. Weather cache stays on the filesystem (ephemeral by design).
 
-### 2. Secrets
+### 2. Secrets + accounts
 
 ```bash
 cp .env.example .env.local
-# Set: DATABASE_URL, ANTHROPIC_API_KEY (optional),
+# Set: DATABASE_URL, ANTHROPIC_API_KEY (optional), MANUS_API_KEY (optional),
 #      CRON_SECRET, ADMIN_SECRET  (openssl rand -hex 32)
 ```
+
+Accounts: open `/register` and create the first user — **the first account
+automatically becomes admin**. Everyone after is a regular user. Admins sign
+in at `/login` and manage everything under `/admin` (review queue, article
+CRUD, market CSV import). Admin APIs also still accept the legacy
+`ADMIN_SECRET` bearer token for scripts.
 
 ### 3. Real market data (replacing demo series)
 
@@ -189,7 +195,17 @@ Three paths, in order of preference:
 Real rows (`isMock: false`) automatically flip markets/forecasts/ask to
 `live`/`mixed` data modes.
 
-### 4. AI enrichment + review queue
+### 4. AI providers (Anthropic + Manus)
+
+- `ANTHROPIC_API_KEY` powers translation proposals in the enrichment worker.
+- `MANUS_API_KEY` (manus.im/app → Settings → Integrations → API) powers
+  `POST /api/ai/manus` — { prompt, locale } → Manus agent runs the task
+  (up to ~105s) and returns { taskId, status, output }. Without the key the
+  route answers `503 manus-disabled` with a setup hint; the client
+  (`src/lib/ai/manus.ts`) is covered by mocked unit tests.
+- Without keys, everything degrades to labeled rule-based behavior.
+
+### 5. AI enrichment + review queue
 
 ```bash
 npm run worker:enrichment   # proposes RW translations/key points (needs ANTHROPIC_API_KEY)
@@ -199,7 +215,7 @@ Proposals land in the review queue — nothing auto-publishes. Review at
 `/admin/review` (ADMIN_SECRET gate): approve / edit / flag. Decisions are
 append-only history and mark article provenance as `reviewed`.
 
-### 5. Scheduler
+### 6. Scheduler
 
 - **Vercel**: `vercel.json` crons call `/api/ingest?run=1` (6-hourly) and
   `/api/cron/market` (daily). Set `CRON_SECRET` in project env vars —
@@ -209,7 +225,7 @@ append-only history and mark article provenance as `reviewed`.
   `npm run worker:ingest`, `npm run worker:market`,
   `npm run worker:forecasts`, `npm run worker:weather`.
 
-### 6. Deploy + verify
+### 7. Deploy + verify
 
 ```bash
 npm run build
@@ -220,7 +236,7 @@ BASE_URL=http://localhost:3100 npm run smoke   # pages + APIs + honesty checks
 CI (`.github/workflows/ci.yml`) runs typecheck → lint → test →
 build → smoke on every push.
 
-### 7. Scaling notes (when needed)
+### 8. Scaling notes (when needed)
 
 - Rate limiter is in-memory: move to Redis/Upstash for multi-instance.
 - `ADMIN_SECRET` is a shared team secret: replace with Auth.js before
@@ -232,6 +248,8 @@ build → smoke on every push.
 - [x] Real market observation source (e-Soko adapter + admin CSV import)
 - [x] Postgres/Supabase migration (dual-backend repositories)
 - [x] Human review queue for AI summaries/translations
+- [x] Accounts + admin article CRUD + light/dark theme + article images
+- [x] Manus agent API ready (`POST /api/ai/manus`)
 - [ ] PWA offline + SMS price alerts for farmers
 - [ ] Forecast model v0.2 with backtested calibration
 - [ ] Auth.js admin auth + Redis rate limiting

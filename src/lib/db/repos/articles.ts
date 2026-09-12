@@ -103,3 +103,23 @@ export async function upsertArticlesRepo(articles: Article[]): Promise<void> {
 export async function updateArticleRepo(article: Article): Promise<void> {
   await upsertArticlesRepo([article]);
 }
+
+/**
+ * Delete one stored article (admin CRUD). Returns false when the id is not
+ * a stored row (e.g. a built-in seed, which lives in code, not the DB).
+ */
+export async function deleteArticleRepo(id: string): Promise<boolean> {
+  if (isPostgresEnabled()) {
+    try {
+      const r = await pgQuery('DELETE FROM articles WHERE id = $1', [id]);
+      return (r.rowCount ?? 0) > 0;
+    } catch (err) {
+      console.error('[db] articles pg delete failed, falling back to json:', err instanceof Error ? err.message : err);
+    }
+  }
+  const existing = (await readStore<Article[]>(STORE))?.value ?? [];
+  const next = existing.filter((a) => a.id !== id);
+  if (next.length === existing.length) return false;
+  await writeStore(STORE, next);
+  return true;
+}

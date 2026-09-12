@@ -31,19 +31,65 @@ export interface IngestMeta {
 export function classifyCategory(title: string, excerpt: string): NewsCategory {
   const t = `${title} ${excerpt}`.toLowerCase();
   const has = (...words: string[]): boolean => words.some((w) => t.includes(w));
+  // Breaking takes precedence (explicit markers only — never guess).
+  if (has('breaking', 'just in', 'amakuru agezweho', 'birihutirwa', 'live:')) return 'imvurugano';
   if (
-    has('ibirayi', 'ibishyimbo', 'ibigori', 'inyanya', 'igitoki', 'umuceri', 'imyumbati', 'potato', 'bean', 'maize', 'cassava', 'harvest', 'umusaruro', 'ubuhinzi', 'rab', 'minagri', 'imvura', 'rainfall', 'drought', 'amapfa')
+    has(
+      'ibirayi', 'ibishyimbo', 'ibigori', 'inyanya', 'igitoki', 'umuceri', 'imyumbati',
+      'ikawa', 'icyayi', 'amata', 'inka', 'ubworozi', 'ifumbire', 'imbuto',
+      'potato', 'bean', 'maize', 'cassava', 'rice', 'coffee', 'tea', 'milk', 'dairy',
+      'cattle', 'livestock', 'fertilizer', 'seed', 'harvest', 'crop', 'farm',
+      'umusaruro', 'ubuhinzi', 'umuhinzi', 'abahinzi', 'rab', 'minagri',
+      'imvura', 'rainfall', 'rain', 'drought', 'amapfa', 'flood', 'umwuzure',
+      'food security', 'ibiribwa', 'nutrition', 'imirire',
+    )
   )
     return 'ubuhinzi';
-  if (has('bnr', 'ifaranga', 'rwf', 'exchange', 'inflation', 'gdp', 'ubukungu', 'bank', 'banki', 'igiciro', 'price', 'market', 'isoko'))
+  if (
+    has(
+      'bnr', 'ifaranga', 'rwf', 'frw', 'exchange', 'inflation', 'gdp', 'ubukungu',
+      'bank', 'banki', 'igiciro', 'price', 'market', 'isoko', 'trade', 'ubucuruzi',
+      'export', 'import', 'tax', 'umusoro', 'loan', 'inguzanyo', ' world bank',
+      'imf', 'investment', 'ishoramari', 'business', 'ubucuruzi', 'economy',
+      'salary', 'umushahara', 'poverty', 'ubukene', 'rra', 'rssb', 'insurance',
+    )
+  )
     return 'ubukungu';
-  if (has('mtn', 'airtel', '5g', 'internet', 'ikoranabuhanga', 'technology', 'software', 'ai', 'phone', 'telephone'))
+  if (
+    has(
+      'mtn', 'airtel', '5g', '4g', 'internet', 'ikoranabuhanga', 'technology',
+      'software', 'app', 'digital', 'ai', 'artificial intelligence', 'robot',
+      'phone', 'telephone', 'telefoni', 'computer', 'mudasobwa', 'cyber',
+      'startup', 'fintech', 'momo', 'mobile money',
+    )
+  )
     return 'ikoranabuhanga';
-  if (has('ubuzima', 'health', 'hospital', 'ibitaro', 'vaccine', 'urukingo', 'malaria', 'malariya'))
+  if (
+    has(
+      'ubuzima', 'health', 'hospital', 'ibitaro', 'vaccine', 'urukingo',
+      'malaria', 'malariya', 'cholera', 'kolera', 'ebola', 'covid', 'doctor',
+      'muganga', 'nurse', 'umuforomo', 'disease', 'indwara', 'clinic',
+      'ivuriro', 'rbc', 'minisante', 'mental health',
+    )
+  )
     return 'ubuzima';
-  if (has('sport', 'imikino', 'umupira', 'football', 'amateka', 'match', 'league', 'APR', 'Rayon'))
+  if (
+    has(
+      'sport', 'sports', 'imikino', 'umupira', 'football', 'basketball',
+      'match', 'league', 'shampiyona', 'apr', 'rayon', 'stade', 'sitade',
+      'olympic', 'marathon', 'cycling', 'caf', 'fifa', 'afcon',
+    )
+  )
     return 'imikino';
-  if (has('perezida', 'president', 'minisitiri', 'minister', 'politiki', 'politics', 'election', 'amatora', 'parliament', 'inteko'))
+  if (
+    has(
+      'perezida', 'president', 'kagame', 'minisitiri', 'minister', 'politiki',
+      'politics', 'election', 'amatora', 'parliament', 'inteko', 'senate',
+      'senat', 'mayor', 'meya', 'governor', 'guverineri', 'policy', 'itegeko',
+      'law', 'rights', 'uburenganzira', 'diplomat', 'embassy', 'government',
+      'leta', 'cabinet', 'vote', 'itora',
+    )
+  )
     return 'politiki';
   return 'amahanga';
 }

@@ -5,6 +5,7 @@ import { Clock, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Article, NewsArticle } from '@/types';
 import { CategoryBadge, ContentStatusBadge } from '@/components/ui/Badges';
+import { ArticleImage } from '@/components/news/ArticleImage';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 type CardArticle = Article | NewsArticle;
@@ -30,14 +31,16 @@ export default function NewsCard({ article, variant = 'grid' }: { article: CardA
   const legacy: NewsArticle | null = full ? null : (article as NewsArticle);
   const sourceName = full ? (full.sources[0]?.name ?? 'Ibihe') : (legacy?.source ?? 'Ibihe');
   const href = `/amakuru/${article.id}`;
+  const image = 'imageUrl' in article && typeof article.imageUrl === 'string' ? article.imageUrl : undefined;
 
   if (variant === 'hero') {
     return (
       <Link href={href} className="block relative rounded-2xl overflow-hidden border border-white/10 group hover:border-[#00c853]/40 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00c853]">
         <article>
-          <div className="min-h-44 bg-gradient-to-br from-[#00c853]/25 via-[#0d3a1e] to-[#001a0a] flex items-end p-5 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #00c853 0%, transparent 60%)' }} />
-            <div className="relative z-10">
+          <div className="min-h-44 flex items-end relative overflow-hidden">
+            <ArticleImage src={image} alt="" className="absolute inset-0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" aria-hidden="true" />
+            <div className="relative z-10 p-5">
               <div className="flex gap-2 mb-2 flex-wrap">
                 <CategoryBadge category={article.category} label={catLabel} />
                 {full && <ContentStatusBadge status={full.status} />}
@@ -63,6 +66,7 @@ export default function NewsCard({ article, variant = 'grid' }: { article: CardA
   return (
     <Link href={href} className="block bg-[#111] border border-white/10 rounded-xl p-4 hover:border-white/25 hover:bg-[#161616] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00c853]">
       <article>
+        {image && <ArticleImage src={image} alt="" className="h-32 w-full rounded-lg mb-3 border border-white/10" />}
         <div className="flex items-start gap-2 mb-2 flex-wrap">
           <CategoryBadge category={article.category} label={catLabel} />
           {full && <ContentStatusBadge status={full.status} size="xs" />}

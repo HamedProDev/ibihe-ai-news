@@ -34,7 +34,7 @@ function ReviewCard({ item, secret, onDecided }: { item: ReviewItem; secret: str
     try {
       const res = await fetch('/api/review', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+        headers: { 'Content-Type': 'application/json', ...(secret ? { Authorization: `Bearer ${secret}` } : {}) },
         body: JSON.stringify({ id: item.id, decision, editedRaw: decision === 'edit' ? text : undefined, note, reviewer: 'admin-ui' }),
       });
       const json = (await res.json()) as { ok: boolean; error?: { messageEn: string } };
@@ -137,7 +137,7 @@ function ImportCard({ secret }: { secret: string }) {
     try {
       const res = await fetch('/api/market/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+        headers: { 'Content-Type': 'application/json', ...(secret ? { Authorization: `Bearer ${secret}` } : {}) },
         body: JSON.stringify({ csv }),
       });
       const json = (await res.json()) as { ok: boolean; data?: { added: number; errors: Array<{ row: number; message: string }> }; error?: { messageEn: string } };
@@ -185,6 +185,12 @@ export default function AdminReviewPage() {
   const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json() as Promise<{ ok: boolean; data?: { user: { role: string } } }>)
+      .then((j) => {
+        if (j.ok && j.data?.user.role === 'admin') setUnlocked(true);
+      })
+      .catch(() => undefined);
     try {
       const saved = window.sessionStorage.getItem(SECRET_KEY);
       if (saved) {
@@ -203,7 +209,7 @@ export default function AdminReviewPage() {
     setError(null);
     try {
       const res = await fetch(`/api/review?status=${filter}`, {
-        headers: { Authorization: `Bearer ${secret}` },
+        headers: { ...(secret ? { Authorization: `Bearer ${secret}` } : {}) },
       });
       const json = (await res.json()) as { ok: boolean; data?: { items: ReviewItem[] }; error?: { code: string; messageKiny: string; messageEn: string } };
       if (!json.ok || !json.data) {

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/api/envelope';
-import { adminConfigured, requireAdmin } from '@/lib/api/auth';
+import { requireAdminAuth } from '@/lib/auth/session';
 import { parseMarketCsv } from '@/lib/market/sources/csv';
 import { appendObservations } from '@/lib/market/store';
 
@@ -10,11 +10,10 @@ import { appendObservations } from '@/lib/market/store';
  * Invalid rows are rejected with row-level errors; valid rows still import.
  */
 export async function POST(req: NextRequest) {
-  if (!adminConfigured()) {
-    return err('import-disabled', 'Import ntirikora (ADMIN_SECRET).', 'Import is not configured.', 503);
-  }
-  if (!requireAdmin(req)) {
-    return err('unauthorized', 'Nta burenganzira.', 'Unauthorized.', 401);
+  // Admin session cookie OR legacy ADMIN_SECRET bearer.
+  const admin = await requireAdminAuth(req);
+  if (!admin) {
+    return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }
   try {
     const body = (await req.json().catch(() => null)) as { csv?: unknown } | null;

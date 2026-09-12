@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/api/envelope';
-import { adminConfigured, requireAdmin } from '@/lib/api/auth';
+import { requireAdminAuth } from '@/lib/auth/session';
 import { decideReviewRepo, getReviewRepo, listReviewsRepo } from '@/lib/db/repos/reviews';
 import { updateArticleRepo } from '@/lib/db/repos/articles';
 import { getArticle } from '@/lib/news/store';
@@ -9,11 +9,10 @@ import type { ReviewDecision, ReviewStatus } from '@/lib/review/types';
 
 /** List review items (admin only). */
 export async function GET(req: NextRequest) {
-  if (!adminConfigured()) {
-    return err('review-disabled', 'Review ntirikora (ADMIN_SECRET).', 'Review is not configured.', 503);
-  }
-  if (!requireAdmin(req)) {
-    return err('unauthorized', 'Nta burenganzira.', 'Unauthorized.', 401);
+  // Admin session cookie OR legacy ADMIN_SECRET bearer.
+  const admin = await requireAdminAuth(req);
+  if (!admin) {
+    return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }
   try {
     const { searchParams } = new URL(req.url);
@@ -31,11 +30,10 @@ const STATUS_OF: Record<ReviewDecision, ReviewStatus> = { approve: 'approved', e
 
 /** Decide on a review item (admin only). Applies approved/edited values to the article. */
 export async function POST(req: NextRequest) {
-  if (!adminConfigured()) {
-    return err('review-disabled', 'Review ntirikora (ADMIN_SECRET).', 'Review is not configured.', 503);
-  }
-  if (!requireAdmin(req)) {
-    return err('unauthorized', 'Nta burenganzira.', 'Unauthorized.', 401);
+  // Admin session cookie OR legacy ADMIN_SECRET bearer.
+  const admin = await requireAdminAuth(req);
+  if (!admin) {
+    return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }
   try {
     const body = (await req.json().catch(() => null)) as {
@@ -70,7 +68,10 @@ export async function POST(req: NextRequest) {
     const decidedAt = new Date().toISOString();
     const updated = await decideReviewRepo(id, {
       status: STATUS_OF[decision as ReviewDecision],
-      decidedBy: typeof body?.reviewer === 'string' ? body.reviewer.slice(0, 80) : 'admin',
+      decidedBy:
+        typeof body?.reviewer === 'string' && body.reviewer
+          ? body.reviewer.slice(0, 80)
+          : admin.email || admin.name || 'admin-token',
       decidedAt,
       decisionNote: typeof body?.note === 'string' ? body.note.slice(0, 500) : '',
       proposedRw: decision === 'edit' ? editedRaw : undefined,

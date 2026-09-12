@@ -20,10 +20,15 @@ const PAGES = [
   '/baza',
   '/ubuhinzi',
   '/ubukungu',
+  '/login',
+  '/register',
   '/admin/review',
+  '/admin/articles',
+  '/admin/articles/new',
 ];
 
 const APIS = [
+  '/api',
   '/api/news?limit=1',
   '/api/articles/demo-1',
   '/api/search?q=ibirayi',
@@ -97,6 +102,68 @@ await check('POST /api/ask (honest insufficient)', async () => {
 await check('POST /api/review without secret -> 401/503', async () => {
   const res = await fetch(BASE + '/api/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
   assertOk(res.status === 401 || res.status === 503, `status=${res.status}`);
+});
+
+await check('POST /api/auth/register -> 201 + cookie, me -> 200, logout -> 401 after', async () => {
+  const email = `smoke-${Date.now()}@example.com`;
+  const reg = await fetch(BASE + '/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: 'smoke-pass-123', name: 'Smoke' }),
+  });
+  assertOk(reg.status === 201, `register status=${reg.status}`);
+  const cookies = typeof reg.headers.getSetCookie === 'function' ? reg.headers.getSetCookie() : [];
+  const session = cookies.find((c) => c.startsWith('ibihe_session='))?.split(';')[0];
+  assertOk(!!session, 'missing session cookie');
+  const me = await fetch(BASE + '/api/auth/me', { headers: { Cookie: session } });
+  assertOk(me.status === 200, `me status=${me.status}`);
+  const meJson = await me.json();
+  assertOk(meJson.data?.user?.email === email, 'me email mismatch');
+  const out = await fetch(BASE + '/api/auth/logout', { method: 'POST', headers: { Cookie: session } });
+  assertOk(out.status === 200, `logout status=${out.status}`);
+  const me2 = await fetch(BASE + '/api/auth/me', { headers: { Cookie: session } });
+  assertOk(me2.status === 401, `me-after-logout status=${me2.status}`);
+});
+
+await check('Admin CRUD via ADMIN_SECRET bearer (create/read/update/delete)', async () => {
+  const secret = process.env.SMOKE_ADMIN_SECRET ?? '';
+  assertOk(!!secret, 'SMOKE_ADMIN_SECRET not set for smoke run');
+  const H = { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` };
+  const created = await fetch(BASE + '/api/admin/articles', {
+    method: 'POST',
+    headers: H,
+    body: JSON.stringify({
+      title: 'Smoke test article', excerpt: 'Smoke excerpt.', category: 'amahanga',
+      sourceName: 'Smoke', imageUrl: 'https://example.com/smoke.jpg',
+    }),
+  });
+  assertOk(created.status === 201, `create status=${created.status}`);
+  const { data } = await created.json();
+  const id = data?.article?.id;
+  assertOk(!!id && data.article.imageUrl === 'https://example.com/smoke.jpg', 'create payload mismatch');
+  const got = await fetch(BASE + `/api/admin/articles/${id}`, { headers: { Authorization: `Bearer ${secret}` } });
+  assertOk(got.status === 200, `read status=${got.status}`);
+  const updated = await fetch(BASE + `/api/admin/articles/${id}`, {
+    method: 'PUT', headers: H, body: JSON.stringify({ title: 'Smoke test article v2', category: 'ubuhinzi' }),
+  });
+  assertOk(updated.status === 200, `update status=${updated.status}`);
+  const uj = await updated.json();
+  assertOk(uj.data?.article?.title === 'Smoke test article v2', 'update payload mismatch');
+  const del = await fetch(BASE + `/api/admin/articles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${secret}` } });
+  assertOk(del.status === 200, `delete status=${del.status}`);
+  const gone = await fetch(BASE + `/api/admin/articles/${id}`, { headers: { Authorization: `Bearer ${secret}` } });
+  assertOk(gone.status === 404, `read-after-delete status=${gone.status}`);
+});
+
+await check('POST /api/ai/manus without key -> 503 manus-disabled', async () => {
+  const res = await fetch(BASE + '/api/ai/manus', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: 'Say hello in one sentence.' }),
+  });
+  assertOk(res.status === 503, `status=${res.status}`);
+  const json = await res.json();
+  assertOk(json.error?.code === 'manus-disabled', 'wrong error code');
 });
 
 await check('POST /api/market/import without secret -> 401/503', async () => {

@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Brain, Menu, Search, X, Zap } from 'lucide-react';
+import { Bell, Brain, LogOut, Menu, Search, ShieldCheck, User, X, Zap } from 'lucide-react';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { SearchBar } from '@/components/ui/SearchBar';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useApi } from '@/hooks/useApi';
+import { useAuth } from '@/hooks/useAuth';
 
 const NAV = [
   { key: 'home', href: '/' },
@@ -61,6 +63,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, loading: authLoading, logout, isAdmin } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -128,11 +131,48 @@ export default function Header() {
             </button>
             <button
               className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors relative"
-              aria-label="Notifications"
+              aria-label={locale === 'rw' ? s.common.notifications.rw : s.common.notifications.en}
             >
               <Bell size={18} aria-hidden="true" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#00c853] rounded-full" aria-hidden="true" />
             </button>
+            <ThemeToggle />
+            {!authLoading &&
+              (user ? (
+                <>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/articles"
+                      aria-label={locale === 'rw' ? s.admin.title.rw : s.admin.title.en}
+                      className="text-[#00c853] hover:bg-[#00c853]/10 p-2 rounded-lg transition-colors"
+                    >
+                      <ShieldCheck size={18} aria-hidden="true" />
+                    </Link>
+                  )}
+                  <span
+                    title={user.email}
+                    className="hidden sm:inline-flex w-8 h-8 items-center justify-center rounded-full bg-[#00c853]/15 text-[#00c853] text-[13px] font-bold"
+                  >
+                    {(user.name || user.email).slice(0, 1).toUpperCase()}
+                  </span>
+                  <button
+                    onClick={logout}
+                    aria-label={locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
+                    title={locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
+                    className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <LogOut size={18} aria-hidden="true" />
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5 transition-colors"
+                >
+                  <User size={14} aria-hidden="true" />
+                  {locale === 'rw' ? s.auth.login.rw : s.auth.login.en}
+                </Link>
+              ))}
             <button
               className="lg:hidden text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5"
               onClick={() => setMenuOpen((o) => !o)}
@@ -165,7 +205,7 @@ export default function Header() {
               {navLabel(item.key)}
             </Link>
           ))}
-          <div className="px-4 py-3 flex items-center gap-3">
+          <div className="px-4 py-3 flex items-center gap-3 flex-wrap">
             <LanguageToggle />
             <Link
               href="/baza"
@@ -174,6 +214,48 @@ export default function Header() {
             >
               {pick(s.nav.ask)}
             </Link>
+            {!authLoading &&
+              (user ? (
+                <>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/articles"
+                      onClick={() => setMenuOpen(false)}
+                      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#00c853] border border-[#00c853]/30 rounded-lg px-3 py-1.5"
+                    >
+                      <ShieldCheck size={14} aria-hidden="true" />
+                      {locale === 'rw' ? s.admin.title.rw : s.admin.title.en}
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMenuOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 border border-white/15 rounded-lg px-3 py-1.5"
+                  >
+                    <LogOut size={14} aria-hidden="true" />
+                    {locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 border border-white/15 rounded-lg px-3 py-1.5"
+                  >
+                    {locale === 'rw' ? s.auth.login.rw : s.auth.login.en}
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold bg-[#00c853] text-black rounded-lg px-3 py-1.5"
+                  >
+                    {locale === 'rw' ? s.auth.register.rw : s.auth.register.en}
+                  </Link>
+                </>
+              ))}
           </div>
         </nav>
       )}

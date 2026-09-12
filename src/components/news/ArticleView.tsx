@@ -9,6 +9,7 @@ import { EvidenceList } from './EvidenceList';
 import { WhyMatters } from './WhyMatters';
 import { RelatedStories } from './RelatedStories';
 import { StoryTimeline } from './StoryTimeline';
+import { ArticleImage } from './ArticleImage';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export function ArticleView({
@@ -38,6 +39,14 @@ export function ArticleView({
         <ContentStatusBadge status={article.status} />
         {article.generated && <AIBadge ai={article.generated} />}
       </div>
+
+      {article.imageUrl && (
+        <ArticleImage
+          src={article.imageUrl}
+          alt={useEn ? article.title : article.titleKiny}
+          className="mb-5 aspect-video w-full rounded-2xl border border-white/10"
+        />
+      )}
 
       <h1 className="text-white text-2xl sm:text-3xl font-bold leading-tight mb-2">
         {useEn ? article.title : article.titleKiny}

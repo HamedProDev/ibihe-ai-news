@@ -3,6 +3,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { LanguageProvider } from '@/components/i18n/LanguageProvider';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -29,9 +30,18 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="rw" className="dark">
+    // suppressHydrationWarning: theme is set pre-paint by the inline script below.
+    <html lang="rw" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('ibihe-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`,
+          }}
+        />
+      </head>
       <body className="bg-[#0a0a0a] text-white min-h-screen antialiased">
         <LanguageProvider>
+          <ThemeProvider>
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-[#00c853] focus:text-black focus:px-3 focus:py-2 focus:rounded-lg text-sm font-medium"
@@ -40,7 +50,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </a>
           <Header />
           <div id="main-content">{children}</div>
-          <Footer />
+            <Footer />
+          </ThemeProvider>
         </LanguageProvider>
       </body>
     </html>

@@ -41,3 +41,85 @@ body {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
+
+/* ============ Light theme (html[data-theme="light"]) ============
+ * The app is dark-first: components use explicit dark utilities.
+ * This block remaps every color utility used in the codebase, so the
+ * theme toggle is real without touching 40+ files. When adding a new
+ * dark-only color utility, add its light mapping here. */
+html[data-theme="light"] body {
+  background-color: #f6f6f3 !important;
+  color: #1a1a1a !important;
+}
+html[data-theme="light"] ::-webkit-scrollbar-track { background: #e4e4de; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background: #bdbdb5; }
+/* Surfaces */
+html[data-theme="light"] .bg-\[\#0a0a0a\] { background-color: #ffffff; }
+html[data-theme="light"] .bg-\[\#0a0a0a\]\/95 { background-color: rgba(255, 255, 255, 0.95); }
+html[data-theme="light"] .bg-\[\#0d0d0d\] { background-color: #efefea; }
+html[data-theme="light"] .bg-\[\#111\] { background-color: #ffffff; }
+html[data-theme="light"] .bg-\[\#161616\] { background-color: #f1f1ed; }
+html[data-theme="light"] .bg-\[\#0d1a11\] { background-color: #eaf4ec; }
+html[data-theme="light"] .bg-\[\#0a0e1a\],
+html[data-theme="light"] .bg-\[\#0d141b\] { background-color: #edf1f5; }
+html[data-theme="light"] .bg-black\/30 { background-color: rgba(20, 20, 20, 0.06); }
+/* Hero/gradient washes (full override — robust across Tailwind versions) */
+html[data-theme="light"] .from-\[\#00c853\]\/25 {
+  background-image: linear-gradient(to bottom right, #cdeeda, #e6f4ea, #f6f6f3) !important;
+}
+html[data-theme="light"] .from-\[\#00c853\]\/12 {
+  background-image: linear-gradient(to bottom right, #e2f4e8, #f6f6f3) !important;
+}
+/* Translucent fills */
+html[data-theme="light"] .bg-white\/5 { background-color: rgba(20, 20, 20, 0.05); }
+html[data-theme="light"] .bg-white\/10 { background-color: rgba(20, 20, 20, 0.08); }
+html[data-theme="light"] .bg-white\/15 { background-color: rgba(20, 20, 20, 0.12); }
+html[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(20, 20, 20, 0.06); }
+html[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(20, 20, 20, 0.1); }
+html[data-theme="light"] .hover\:bg-white\/15:hover { background-color: rgba(20, 20, 20, 0.14); }
+/* Text */
+html[data-theme="light"] .text-white { color: #1a1a1a; }
+html[data-theme="light"] .text-white\/85 { color: rgba(26, 26, 26, 0.85); }
+html[data-theme="light"] .text-white\/80 { color: rgba(26, 26, 26, 0.8); }
+html[data-theme="light"] .text-white\/75 { color: rgba(26, 26, 26, 0.75); }
+html[data-theme="light"] .text-white\/70 { color: rgba(26, 26, 26, 0.7); }
+html[data-theme="light"] .text-white\/65 { color: rgba(26, 26, 26, 0.65); }
+html[data-theme="light"] .text-white\/60 { color: rgba(26, 26, 26, 0.6); }
+html[data-theme="light"] .text-white\/55 { color: rgba(26, 26, 26, 0.55); }
+html[data-theme="light"] .text-white\/50 { color: rgba(26, 26, 26, 0.5); }
+html[data-theme="light"] .text-white\/45 { color: rgba(26, 26, 26, 0.45); }
+html[data-theme="light"] .text-white\/40 { color: rgba(26, 26, 26, 0.4); }
+html[data-theme="light"] .text-white\/35 { color: rgba(26, 26, 26, 0.35); }
+html[data-theme="light"] .text-white\/30 { color: rgba(26, 26, 26, 0.3); }
+html[data-theme="light"] .text-white\/25 { color: rgba(26, 26, 26, 0.25); }
+html[data-theme="light"] .hover\:text-white:hover { color: #1a1a1a; }
+html[data-theme="light"] .group:hover .group-hover\:text-white { color: #1a1a1a; }
+html[data-theme="light"] .placeholder\:text-white\/35::placeholder { color: rgba(26, 26, 26, 0.35); }
+/* Brand green text needs darkening on light backgrounds */
+html[data-theme="light"] .text-\[\#00c853\] { color: #0a7a35; }
+html[data-theme="light"] .group:hover .group-hover\:text-\[\#00c853\] { color: #0a7a35; }
+/* Borders */
+html[data-theme="light"] .border-white\/5 { border-color: rgba(20, 20, 20, 0.07); }
+html[data-theme="light"] .border-white\/10 { border-color: rgba(20, 20, 20, 0.12); }
+html[data-theme="light"] .border-white\/15 { border-color: rgba(20, 20, 20, 0.16); }
+html[data-theme="light"] .border-white\/20 { border-color: rgba(20, 20, 20, 0.22); }
+html[data-theme="light"] .border-white\/25 { border-color: rgba(20, 20, 20, 0.27); }
+html[data-theme="light"] .border-white\/30 { border-color: rgba(20, 20, 20, 0.32); }
+html[data-theme="light"] .divide-white\/5 > * + * { border-color: rgba(20, 20, 20, 0.07); }
+html[data-theme="light"] .hover\:border-white\/25:hover { border-color: rgba(20, 20, 20, 0.27); }
+html[data-theme="light"] .hover\:border-white\/30:hover { border-color: rgba(20, 20, 20, 0.32); }
+html[data-theme="light"] .focus\:border-white\/30:focus { border-color: rgba(20, 20, 20, 0.32); }
+/* Bright named colors, darkened for light backgrounds */
+html[data-theme="light"] .text-red-400,
+html[data-theme="light"] .text-red-300 { color: #c62828; }
+html[data-theme="light"] .text-red-300\/80 { color: rgba(198, 40, 40, 0.8); }
+html[data-theme="light"] .text-amber-300 { color: #8a5a00; }
+html[data-theme="light"] .text-amber-300\/80 { color: rgba(138, 90, 0, 0.8); }
+html[data-theme="light"] .text-amber-300\/70 { color: rgba(138, 90, 0, 0.7); }
+html[data-theme="light"] .text-amber-200\/90 { color: rgba(138, 90, 0, 0.9); }
+html[data-theme="light"] .text-amber-200\/70 { color: rgba(138, 90, 0, 0.7); }
+html[data-theme="light"] .text-blue-300,
+html[data-theme="light"] .text-blue-400 { color: #1565c0; }
+html[data-theme="light"] .text-green-400,
+html[data-theme="light"] .text-green-300,
+html[data-theme="light"] .text-emerald-300 { color: #0a7a35; }
