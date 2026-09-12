@@ -11,7 +11,9 @@ import type { RawFeedItem } from '../../types/news';
 import { enabledFeedSources, type SourceDef } from '../news/source-registry.ts';
 
 const parser = new Parser({
-  timeout: 9000,
+  // Generous: full-text feeds (e.g. New Times) are multi-MB and slow on
+  // some networks. Workers run on cron so 30s is cheap; never user-facing.
+  timeout: 30_000,
   headers: { 'User-Agent': 'IbiheNewsBot/1.0 (+https://ibihe.rw; contact@ibihe.rw)' },
   customFields: { item: ['media:content', 'media:thumbnail'] },
 });
