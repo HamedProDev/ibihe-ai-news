@@ -27,7 +27,10 @@ export const SOURCE_REGISTRY: SourceDef[] = [
     id: 'newtimes',
     name: 'The New Times',
     homeUrl: 'https://www.newtimes.co.rw/',
-    feedUrl: 'https://www.newtimes.co.rw/rss.xml',
+    // Official feed (verified live): News section. Other sections use the
+    // same pattern — /rssFeed/15 opinions, /16 sports, /17 lifestyle, ...
+    // Full list: https://www.newtimes.co.rw/rss
+    feedUrl: 'https://www.newtimes.co.rw/rssFeed/14',
     language: 'en',
     defaultCategory: 'amahanga',
     trustTier: 2,
@@ -38,11 +41,15 @@ export const SOURCE_REGISTRY: SourceDef[] = [
     id: 'igihe',
     name: 'Igihe',
     homeUrl: 'https://igihe.com/',
-    feedUrl: 'https://igihe.com/rss.xml',
+    // No feedUrl: Igihe publishes no public RSS (checked 2026-09-12:
+    // /rss.xml, /feed, /backend, spip.php?page=backend — all 404, including
+    // on en.igihe.com). Source stays registered for attribution/linking;
+    // add a feedUrl only when Igihe exposes a verified machine-readable
+    // feed. No blind scraping per project policy.
     language: 'rw',
     defaultCategory: 'amahanga',
     trustTier: 2,
-    excerptPolicy: 'quote-with-link',
+    excerptPolicy: 'link-only',
     enabled: true,
   },
   {
