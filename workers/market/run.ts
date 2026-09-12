@@ -6,6 +6,7 @@
  *   node workers/market/run.ts
  *   # or via HTTP: GET /api/cron/market  (Authorization: Bearer $CRON_SECRET)
  */
+import '../../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { appendObservations } from '../../src/lib/market/store.ts';
 import { pullMarketSources } from '../../src/lib/market/sources/registry.ts';
 

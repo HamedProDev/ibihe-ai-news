@@ -6,6 +6,7 @@
  *
  * Requires DATABASE_URL. Safe to re-run (tracks applied versions).
  */
+import '../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { migrate } from '../src/lib/db/migrate.ts';
 import { isPostgresEnabled } from '../src/lib/db/postgres.ts';
 

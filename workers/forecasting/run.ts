@@ -4,6 +4,7 @@
  * Usage:
  *   node workers/forecasting/run.ts
  */
+import '../../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { listForecasts } from '../../src/lib/forecasting/store.ts';
 
 async function main(): Promise<void> {

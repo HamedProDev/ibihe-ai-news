@@ -5,6 +5,7 @@
  *   node workers/ingestion/run.ts
  *   # or via HTTP: POST /api/ingest  (Authorization: Bearer $CRON_SECRET)
  */
+import '../../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { runIngestion } from '../../src/lib/news/ingest.ts';
 
 async function main(): Promise<void> {

@@ -10,6 +10,7 @@
  * Usage:
  *   node workers/enrichment/run.ts [maxItems]
  */
+import '../../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { listArticlesRepo, getArticleRepo } from '../../src/lib/db/repos/articles.ts';
 import { createReviewItemsRepo, hasPendingRepo } from '../../src/lib/db/repos/reviews.ts';
 import { AI_MODEL, isAIConfigured, PROMPT_VERSIONS, translateToKinyarwanda } from '../../src/lib/ai/client.ts';

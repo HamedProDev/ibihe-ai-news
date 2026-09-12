@@ -5,6 +5,7 @@
  *   node workers/weather/run.ts [District...]
  * Defaults to a small set of key districts; pass names to warm more.
  */
+import '../../src/lib/env.ts'; // must load first: plain node ignores .env files
 import { getDistrictWeather } from '../../src/lib/weather/client.ts';
 
 async function main(): Promise<void> {
