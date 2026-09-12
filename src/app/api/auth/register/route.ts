@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     return res;
   }
   try {
-    const body = (await req.json().catch(() => null)) as { email?: unknown; password?: unknown; name?: unknown } | null;
+    const body = (await req.json().catch(() => null)) as { email?: unknown; password?: unknown; name?: unknown; locale?: unknown } | null;
     const emailErr = validateEmail(body?.email);
     if (emailErr) return err('bad-email', 'Imeri ntago ariyo.', emailErr, 400);
     const passErr = validatePassword(body?.password);
@@ -33,13 +33,16 @@ export async function POST(req: NextRequest) {
     }
     const email = (body?.email as string).trim().toLowerCase();
     const name = typeof body?.name === 'string' ? body.name.trim().slice(0, 80) : '';
+    const rawLocale = typeof body?.locale === 'string' ? body.locale : 'rw';
+    const locale = ['rw', 'en', 'fr', 'sw', 'ar', 'ha'].includes(rawLocale) ? rawLocale : 'rw';
     const total = await countUsersRepo();
     const user = {
       id: newUserId(),
       email,
       name,
       passwordHash: await hashPassword(body?.password as string),
-      role: (total === 0 ? 'admin' : 'user') as 'admin' | 'user',
+      role: (total === 0 ? 'admin' : 'user') as 'admin' | 'author' | 'user',
+      locale,
       createdAt: new Date().toISOString(),
     };
     try {

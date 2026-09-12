@@ -7,6 +7,9 @@ export type NewsCategory =
   | 'ikoranabuhanga'
   | 'ubuzima'
   | 'imikino'
+  | 'uburezi'
+  | 'umuco'
+  | 'ibidukikije'
   | 'amahanga'
   | 'imvurugano';
 
@@ -44,6 +47,11 @@ export interface Article extends DemoMarking {
   /** Full provenance chain — original source first. */
   sources: SourceRef[];
   imageUrl?: string;
+  /** ISO 3166-1 alpha-2 country code (default 'RW'). Heuristic for feeds. */
+  country?: string;
+  /** Author profile id + denormalized display name (editorial pieces). */
+  authorId?: string;
+  authorName?: string;
   publishedAt: string;
   fetchedAt: string;
   /** Extracted entities. */

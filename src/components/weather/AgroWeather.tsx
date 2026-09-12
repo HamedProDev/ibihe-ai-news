@@ -6,13 +6,13 @@ import { AIBadge } from '@/components/ui/Badges';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; advisory: AgroAdvisory | null }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
 
   if (!weather.available && weather.forecast.length === 0) {
     return (
       <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-center">
         <CloudRain size={22} className="text-white/30 mx-auto mb-2" aria-hidden="true" />
-        <p className="text-white/60 text-sm">{locale === 'rw' ? s.data.unavailable.rw : s.data.unavailable.en}</p>
+        <p className="text-white/60 text-sm">{t(s.data.unavailable)}</p>
         <p className="text-white/35 text-xs mt-1">Open-Meteo</p>
       </div>
     );
@@ -25,7 +25,7 @@ export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; a
         <section aria-labelledby="wx-obs" className="bg-[#0a0e1a] border border-blue-500/20 rounded-2xl p-4">
           <h3 id="wx-obs" className="flex items-center gap-2 text-white/70 text-xs font-semibold uppercase tracking-widest mb-3">
             <Eye size={13} aria-hidden="true" />
-            {locale === 'rw' ? s.weather.observation.rw : s.weather.observation.en}
+            {t(s.weather.observation)}
             <span className="ml-auto font-normal normal-case tracking-normal text-white/35">
               {weather.observation.source}
             </span>
@@ -51,10 +51,10 @@ export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; a
       <section aria-labelledby="wx-fc" className="bg-[#0a0e1a] border border-blue-500/20 rounded-2xl p-4">
         <h3 id="wx-fc" className="flex items-center gap-2 text-white/70 text-xs font-semibold uppercase tracking-widest mb-3">
           <Telescope size={13} aria-hidden="true" />
-          {locale === 'rw' ? s.weather.forecast.rw : s.weather.forecast.en}
+          {t(s.weather.forecast)}
           {!weather.available && (
             <span className="ml-auto text-amber-300/80 text-[11px] normal-case tracking-normal">
-              {locale === 'rw' ? s.data.stale.rw : s.data.stale.en}
+              {t(s.data.stale)}
             </span>
           )}
         </h3>
@@ -89,7 +89,7 @@ export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; a
           <div className="flex items-center justify-between gap-2 mb-3">
             <h3 id="wx-ai" className="flex items-center gap-2 text-white/70 text-xs font-semibold uppercase tracking-widest">
               <Sparkles size={13} className="text-[#00c853]" aria-hidden="true" />
-              {locale === 'rw' ? s.weather.aiReading.rw : s.weather.aiReading.en}
+              {t(s.weather.aiReading)}
             </h3>
             <AIBadge ai={advisory.ai} size="xs" />
           </div>
@@ -99,7 +99,7 @@ export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; a
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
             <div>
               <h4 className="text-white/50 text-xs font-semibold mb-1.5">
-                {locale === 'rw' ? s.weather.implications.rw : s.weather.implications.en}
+                {t(s.weather.implications)}
               </h4>
               <ul className="space-y-1.5">
                 {(locale === 'rw' ? advisory.implicationsKiny : advisory.implicationsEn).map((t, i) => (
@@ -109,7 +109,7 @@ export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; a
             </div>
             <div>
               <h4 className="text-white/50 text-xs font-semibold mb-1.5">
-                {locale === 'rw' ? s.weather.advice.rw : s.weather.advice.en}
+                {t(s.weather.advice)}
               </h4>
               <ul className="space-y-1.5">
                 {(locale === 'rw' ? advisory.recommendationsKiny : advisory.recommendationsEn).map((t, i) => (

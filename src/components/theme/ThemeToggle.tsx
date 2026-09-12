@@ -6,9 +6,9 @@ import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, toggle } = useTheme();
-  const { s, locale } = useLocale();
-  const label = locale === 'rw' ? s.theme.toggle.rw : s.theme.toggle.en;
-  const next = theme === 'dark' ? (locale === 'rw' ? s.theme.light.rw : s.theme.light.en) : (locale === 'rw' ? s.theme.dark.rw : s.theme.dark.en);
+  const { t, s} = useLocale();
+  const label = t(s.theme.toggle);
+  const next = theme === 'dark' ? (t(s.theme.light)) : (t(s.theme.dark));
   return (
     <button
       onClick={toggle}

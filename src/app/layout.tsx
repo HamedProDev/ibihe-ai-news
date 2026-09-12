@@ -7,14 +7,14 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ibihe AI News — Amakuru, Isoko n’Ibimenyetso',
-    template: '%s — Ibihe AI News',
+    default: 'IbiheNews — Amakuru, Isoko n’Ibimenyetso',
+    template: '%s — IbiheNews',
   },
   description:
     'Urubuga rw’amakuru mu Kinyarwanda: inkuru zizewe, ibiciro by’isoko, ikirere n’ubuhinzi, n’ihanura ribonerana. What happened → why it matters → what data says → what could happen next.',
   keywords: ['amakuru', 'Rwanda news', 'Kinyarwanda', 'isoko', 'ibiciro', 'ubuhinzi', 'ikirere', 'forecast'],
   openGraph: {
-    title: 'Ibihe AI News — Rwanda Information Intelligence',
+    title: 'IbiheNews — Rwanda Information Intelligence',
     description: 'Amakuru yizewe, ibimenyetso, n’ihanura ribonerana — mu Kinyarwanda.',
     locale: 'rw_RW',
     alternateLocale: 'en_US',

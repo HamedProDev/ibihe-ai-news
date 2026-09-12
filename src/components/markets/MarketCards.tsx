@@ -51,7 +51,7 @@ export function MarketTrendCard({ trend }: { trend: MarketTrend }) {
 }
 
 export function MarketSnapshot({ trends, dataMode }: { trends: MarketTrend[]; dataMode: 'live' | 'demo' | 'mixed' }) {
-  const { locale, s } = useLocale();
+  const { t, s } = useLocale();
   return (
     <div>
       <DemoBanner mode={dataMode} />
@@ -60,7 +60,7 @@ export function MarketSnapshot({ trends, dataMode }: { trends: MarketTrend[]; da
           <MarketTrendCard key={`${t.commodity}-${t.market ?? ''}-${t.district ?? ''}`} trend={t} />
         ))}
       </div>
-      <p className="sr-only">{locale === 'rw' ? s.markets.title.rw : s.markets.title.en}</p>
+      <p className="sr-only">{t(s.markets.title)}</p>
     </div>
   );
 }

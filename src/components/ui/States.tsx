@@ -5,23 +5,23 @@ import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ApiError } from '@/lib/client/api';
 
 export function LoadingSkeleton({ lines = 4, label }: { lines?: number; label?: string }) {
-  const { s, locale } = useLocale();
+  const { t, s } = useLocale();
   return (
-    <div role="status" aria-live="polite" aria-label={label ?? (locale === 'rw' ? s.states.loading.rw : s.states.loading.en)} className="space-y-3">
+    <div role="status" aria-live="polite" aria-label={label ?? (t(s.states.loading))} className="space-y-3">
       {Array.from({ length: lines }).map((_, i) => (
         <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" aria-hidden="true" />
       ))}
-      <span className="sr-only">{locale === 'rw' ? s.states.loading.rw : s.states.loading.en}</span>
+      <span className="sr-only">{t(s.states.loading)}</span>
     </div>
   );
 }
 
 export function ErrorState({ error, onRetry }: { error: ApiError | Error | null; onRetry?: () => void }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const msg =
     error instanceof ApiError
       ? locale === 'rw' ? error.messageKiny : error.message
-      : locale === 'rw' ? s.states.error.rw : s.states.error.en;
+      : t(s.states.error);
   return (
     <div role="alert" className="bg-red-500/10 border border-red-500/20 rounded-xl p-5 text-center">
       <AlertTriangle size={20} className="text-red-400 mx-auto mb-2" aria-hidden="true" />
@@ -32,7 +32,7 @@ export function ErrorState({ error, onRetry }: { error: ApiError | Error | null;
           className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
         >
           <RefreshCw size={14} aria-hidden="true" />
-          {locale === 'rw' ? s.states.retry.rw : s.states.retry.en}
+          {t(s.states.retry)}
         </button>
       )}
     </div>
@@ -40,11 +40,11 @@ export function ErrorState({ error, onRetry }: { error: ApiError | Error | null;
 }
 
 export function EmptyState({ message }: { message?: string }) {
-  const { s, locale } = useLocale();
+  const { t, s } = useLocale();
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-xl p-8 text-center">
       <Inbox size={22} className="text-white/30 mx-auto mb-2" aria-hidden="true" />
-      <p className="text-white/50 text-sm">{message ?? (locale === 'rw' ? s.states.empty.rw : s.states.empty.en)}</p>
+      <p className="text-white/50 text-sm">{message ?? (t(s.states.empty))}</p>
     </div>
   );
 }

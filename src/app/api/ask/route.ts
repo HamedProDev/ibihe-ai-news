@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     const rawLocale = typeof body === 'object' && body !== null && 'locale' in body
       ? String((body as { locale: unknown }).locale ?? 'rw')
       : 'rw';
-    const locale = rawLocale === 'en' ? 'en' : 'rw';
+    // Ask brain answers in rw/en only: Kinyarwanda UI -> rw, everything else -> en.
+    const locale = rawLocale === 'rw' ? 'rw' : 'en';
 
     if (question.length < 3) {
       return err('question-too-short', 'Andika ikibazo kirambuye gato.', 'Please ask a slightly longer question.', 400);

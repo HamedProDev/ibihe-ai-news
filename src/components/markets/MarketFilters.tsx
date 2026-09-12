@@ -21,20 +21,20 @@ export function MarketFilters({
   markets: string[];
   onChange: (v: FilterValue) => void;
 }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const selectCls =
     'bg-white/5 border border-white/15 rounded-lg px-2.5 py-2 text-[13px] text-white focus:outline-none focus:border-[#00c853]/60 max-w-full';
 
   return (
-    <div className="flex gap-2 flex-wrap mb-4" role="group" aria-label={locale === 'rw' ? s.markets.title.rw : s.markets.title.en}>
+    <div className="flex gap-2 flex-wrap mb-4" role="group" aria-label={t(s.markets.title)}>
       <label className="flex flex-col gap-1">
-        <span className="text-[11px] text-white/45">{locale === 'rw' ? s.markets.commodity.rw : s.markets.commodity.en}</span>
+        <span className="text-[11px] text-white/45">{t(s.markets.commodity)}</span>
         <select
           className={selectCls}
           value={value.commodity}
           onChange={(e) => onChange({ ...value, commodity: e.target.value })}
         >
-          <option value="">{locale === 'rw' ? s.markets.all.rw : s.markets.all.en}</option>
+          <option value="">{t(s.markets.all)}</option>
           {COMMODITY_IDS.map((id) => (
             <option key={id} value={id}>
               {locale === 'rw' ? COMMODITIES[id]?.nameKiny : COMMODITIES[id]?.nameEn}
@@ -43,18 +43,18 @@ export function MarketFilters({
         </select>
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[11px] text-white/45">{locale === 'rw' ? s.markets.district.rw : s.markets.district.en}</span>
+        <span className="text-[11px] text-white/45">{t(s.markets.district)}</span>
         <select className={selectCls} value={value.district} onChange={(e) => onChange({ ...value, district: e.target.value })}>
-          <option value="">{locale === 'rw' ? s.markets.all.rw : s.markets.all.en}</option>
+          <option value="">{t(s.markets.all)}</option>
           {districts.map((d) => (
             <option key={d} value={d}>{d}</option>
           ))}
         </select>
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[11px] text-white/45">{locale === 'rw' ? s.markets.market.rw : s.markets.market.en}</span>
+        <span className="text-[11px] text-white/45">{t(s.markets.market)}</span>
         <select className={selectCls} value={value.market} onChange={(e) => onChange({ ...value, market: e.target.value })}>
-          <option value="">{locale === 'rw' ? s.markets.all.rw : s.markets.all.en}</option>
+          <option value="">{t(s.markets.all)}</option>
           {markets.map((m) => (
             <option key={m} value={m}>{m}</option>
           ))}

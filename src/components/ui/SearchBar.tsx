@@ -6,14 +6,14 @@ import { Search } from 'lucide-react';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export function SearchBar({ initial = '', autoFocus = false }: { initial?: string; autoFocus?: boolean }) {
-  const { s, locale } = useLocale();
+  const { t, s} = useLocale();
   const router = useRouter();
   const [value, setValue] = useState(initial);
 
   return (
     <form
       role="search"
-      aria-label={locale === 'rw' ? s.search.label.rw : s.search.label.en}
+      aria-label={t(s.search.label)}
       onSubmit={(e) => {
         e.preventDefault();
         const q = value.trim();
@@ -27,8 +27,8 @@ export function SearchBar({ initial = '', autoFocus = false }: { initial?: strin
         value={value}
         autoFocus={autoFocus}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={locale === 'rw' ? s.search.placeholder.rw : s.search.placeholder.en}
-        aria-label={locale === 'rw' ? s.search.label.rw : s.search.label.en}
+        placeholder={t(s.search.placeholder)}
+        aria-label={t(s.search.label)}
         className="w-full bg-white/5 border border-white/15 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#00c853]/60 focus:bg-white/[0.07]"
       />
     </form>

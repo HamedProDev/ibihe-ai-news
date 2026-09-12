@@ -7,7 +7,7 @@ import { AdminNav } from '@/components/admin/AdminNav';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
   const info = await getSessionUser(store.get(SESSION_COOKIE)?.value).catch(() => null);
-  if (!info || info.user.role !== 'admin') {
+  if (!info || (info.user.role !== 'admin' && info.user.role !== 'author')) {
     redirect('/login?next=/admin/articles');
   }
   return (

@@ -15,11 +15,25 @@ import { readIngestMeta, runIngestion, type IngestMeta } from './ingest.ts';
 
 export const CACHE_FRESH_MS = 30 * 60 * 1000;
 
+export type TimeFilter = '24h' | '7d' | '30d' | 'all';
+
 export interface ArticleQuery {
   category?: NewsCategory | 'all';
   limit?: number;
   offset?: number;
+  /** Only articles published within the window. */
+  time?: TimeFilter;
+  /** ISO country code (e.g. 'RW'); 'all' disables. */
+  country?: string;
+  /** 'newest' (default) or 'views' for trending. */
+  sort?: 'newest' | 'views';
 }
+
+const TIME_WINDOW_MS: Record<Exclude<TimeFilter, 'all'>, number> = {
+  '24h': 24 * 3600_000,
+  '7d': 7 * 24 * 3600_000,
+  '30d': 30 * 24 * 3600_000,
+};
 
 export interface ArticleListResult {
   articles: Article[];
@@ -76,7 +90,24 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
     dataMode = 'mixed'; // live articles, possibly stale
   }
 
-  const filtered = category === 'all' ? articles : articles.filter((a) => a.category === category);
+  const { time = 'all', country = 'all', sort = 'newest' } = query;
+  let filtered = category === 'all' ? articles : articles.filter((a) => a.category === category);
+  if (time !== 'all') {
+    const cutoff = Date.now() - TIME_WINDOW_MS[time];
+    filtered = filtered.filter((a) => {
+      const t = new Date(a.publishedAt || a.fetchedAt).getTime();
+      return Number.isFinite(t) && t >= cutoff;
+    });
+  }
+  if (country !== 'all') {
+    const want = country.toUpperCase();
+    filtered = filtered.filter((a) => (a.country ?? 'RW').toUpperCase() === want);
+  }
+  if (sort === 'views') {
+    filtered = [...filtered].sort(
+      (a, b) => (b.views ?? 0) - (a.views ?? 0) || +new Date(b.publishedAt) - +new Date(a.publishedAt),
+    );
+  }
   const clusters = clusterArticles(articles);
   const withCluster = filtered.map((a) => {
     const c = clusters.find((cl) => cl.articleIds.includes(a.id));

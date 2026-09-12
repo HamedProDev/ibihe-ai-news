@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/api/envelope';
-import { requireAdminAuth } from '@/lib/auth/session';
+import { requireStaffAuth } from '@/lib/auth/session';
 import { decideReviewRepo, getReviewRepo, listReviewsRepo } from '@/lib/db/repos/reviews';
 import { updateArticleRepo } from '@/lib/db/repos/articles';
 import { getArticle } from '@/lib/news/store';
@@ -10,7 +10,7 @@ import type { ReviewDecision, ReviewStatus } from '@/lib/review/types';
 /** List review items (admin only). */
 export async function GET(req: NextRequest) {
   // Admin session cookie OR legacy ADMIN_SECRET bearer.
-  const admin = await requireAdminAuth(req);
+  const admin = await requireStaffAuth(req);
   if (!admin) {
     return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }
@@ -31,7 +31,7 @@ const STATUS_OF: Record<ReviewDecision, ReviewStatus> = { approve: 'approved', e
 /** Decide on a review item (admin only). Applies approved/edited values to the article. */
 export async function POST(req: NextRequest) {
   // Admin session cookie OR legacy ADMIN_SECRET bearer.
-  const admin = await requireAdminAuth(req);
+  const admin = await requireStaffAuth(req);
   if (!admin) {
     return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }

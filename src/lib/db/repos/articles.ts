@@ -123,3 +123,59 @@ export async function deleteArticleRepo(id: string): Promise<boolean> {
   await writeStore(STORE, next);
   return true;
 }
+
+/**
+ * Atomically bump the view counter. Best-effort: failures resolve to null
+ * so article reads never break.
+ */
+export async function incrementArticleViewsRepo(id: string): Promise<number | null> {
+  if (isPostgresEnabled()) {
+    try {
+      const r = await pgQuery<{ views: number }>(
+        `UPDATE articles
+         SET data = jsonb_set(data, '{views}', to_jsonb(COALESCE((data->>'views')::int, 0) + 1)),
+             updated_at = now()
+         WHERE id = $1
+         RETURNING (data->>'views')::int AS views`,
+        [id],
+      );
+      return r.rows[0]?.views ?? null;
+    } catch (err) {
+      console.error('[db] articles pg view increment failed:', err instanceof Error ? err.message : err);
+      return null;
+    }
+  }
+  try {
+    const all = (await readStore<Article[]>(STORE))?.value ?? [];
+    const art = all.find((a) => a.id === id);
+    if (!art) return null;
+    art.views = (art.views ?? 0) + 1;
+    await writeStore(STORE, all);
+    return art.views;
+  } catch {
+    return null;
+  }
+}
+
+/** Count stored articles per author id (for bylines/top authors). */
+export async function countArticlesByAuthorRepo(): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  try {
+    if (isPostgresEnabled()) {
+      const r = await pgQuery<{ author_id: string; count: string }>(
+        `SELECT data->>'authorId' AS author_id, COUNT(*)::text AS count
+         FROM articles WHERE data->>'authorId' IS NOT NULL GROUP BY 1`,
+      );
+      for (const row of r.rows) counts[row.author_id] = Number(row.count);
+      return counts;
+    }
+    const all = (await readStore<Article[]>(STORE))?.value ?? [];
+    for (const a of all) {
+      if (a.authorId) counts[a.authorId] = (counts[a.authorId] ?? 0) + 1;
+    }
+    return counts;
+  } catch (err) {
+    console.error('[db] count by author failed:', err instanceof Error ? err.message : err);
+    return counts;
+  }
+}

@@ -15,7 +15,7 @@ import { COMMODITY_IDS, COMMODITIES } from '@/lib/market/commodities';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export default function AgriculturePage() {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const news = useNews('ubuhinzi');
   const market = useMarketData({ windowDays: 30 });
   const fc = useForecasts({ horizon: '14d' });
@@ -24,7 +24,7 @@ export default function AgriculturePage() {
     <main className="max-w-7xl mx-auto px-4 py-6">
       <h1 className="flex items-center gap-2 text-white text-xl font-bold mb-1">
         <Sprout size={20} className="text-[#00c853]" aria-hidden="true" />
-        {locale === 'rw' ? s.nav.agriculture.rw : s.nav.agriculture.en}
+        {t(s.nav.agriculture)}
       </h1>
       <p className="text-white/50 text-sm mb-6">
         {locale === 'rw'
@@ -47,7 +47,7 @@ export default function AgriculturePage() {
 
       <section aria-labelledby="agri-news" className="mb-8">
         <div id="agri-news">
-          <SectionHeader title={locale === 'rw' ? s.nav.news.rw : s.nav.news.en} href="/amakuru?category=ubuhinzi" />
+          <SectionHeader title={t(s.nav.news)} href="/amakuru?category=ubuhinzi" />
         </div>
         {news.loading ? <LoadingSkeleton lines={2} /> : news.error ? <ErrorState error={news.error} onRetry={news.retry} /> : news.full.length === 0 ? <EmptyState /> : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -59,7 +59,7 @@ export default function AgriculturePage() {
       <section aria-labelledby="agri-market" className="mb-8">
         <div id="agri-market">
           <SectionHeader
-            title={locale === 'rw' ? s.home.marketSnapshot.rw : s.home.marketSnapshot.en}
+            title={t(s.home.marketSnapshot)}
             href="/isoko"
             icon={<LineChart size={15} className="text-[#00c853]" aria-hidden="true" />}
           />
@@ -77,7 +77,7 @@ export default function AgriculturePage() {
       <section aria-labelledby="agri-fc">
         <div id="agri-fc">
           <SectionHeader
-            title={locale === 'rw' ? s.home.forecasts.rw : s.home.forecasts.en}
+            title={t(s.home.forecasts)}
             href="/ibimenyetso"
             icon={<Telescope size={15} className="text-cyan-300" aria-hidden="true" />}
           />
@@ -89,7 +89,7 @@ export default function AgriculturePage() {
         )}
         <Link href="/ikirere" className="mt-4 inline-flex items-center gap-2 text-[#00c853] text-sm font-medium hover:underline">
           <CloudSun size={15} aria-hidden="true" />
-          {locale === 'rw' ? s.home.weatherAgri.rw : s.home.weatherAgri.en} →
+          {t(s.home.weatherAgri)} →
         </Link>
       </section>
     </main>

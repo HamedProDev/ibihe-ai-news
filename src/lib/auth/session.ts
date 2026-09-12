@@ -63,12 +63,21 @@ export async function getSessionUser(token: string | undefined): Promise<Session
   return { user: publicUser(user), expiresAt: session.expiresAt };
 }
 
-/** Admin gate: valid admin session cookie OR legacy ADMIN_SECRET bearer. */
+/** Staff gate: admin/author session cookie OR legacy ADMIN_SECRET bearer. */
+export async function requireStaffAuth(req: NextRequest): Promise<PublicUser | null> {
+  const info = await getSessionUser(readSessionToken(req));
+  if (info && (info.user.role === 'admin' || info.user.role === 'author')) return info.user;
+  if (requireAdmin(req)) {
+    return { id: 'token', email: '', name: 'API token', role: 'admin', locale: 'en', createdAt: '' };
+  }
+  return null;
+}
+/** Admin-only gate: valid admin session cookie OR legacy ADMIN_SECRET bearer. */
 export async function requireAdminAuth(req: NextRequest): Promise<PublicUser | null> {
   const info = await getSessionUser(readSessionToken(req));
   if (info && info.user.role === 'admin') return info.user;
   if (requireAdmin(req)) {
-    return { id: 'token', email: '', name: 'API token', role: 'admin', createdAt: '' };
+    return { id: 'token', email: '', name: 'API token', role: 'admin', locale: 'en', createdAt: '' };
   }
   return null;
 }

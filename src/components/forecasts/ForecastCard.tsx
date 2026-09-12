@@ -14,7 +14,7 @@ function DirectionIcon({ d }: { d: Forecast['direction'] }) {
 }
 
 export function ForecastCard({ forecast }: { forecast: Forecast }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const [open, setOpen] = useState(false);
   const name = locale === 'rw' ? COMMODITIES[forecast.commodity]?.nameKiny : COMMODITIES[forecast.commodity]?.nameEn;
   const horizonLabel = forecast.horizon === '7d'
@@ -36,7 +36,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       </div>
 
       <h3 className="text-white font-semibold text-[15px] leading-snug">
-        {name} — {horizonLabel} {locale === 'rw' ? s.forecasts.outlook.rw : s.forecasts.outlook.en}
+        {name} — {horizonLabel} {t(s.forecasts.outlook)}
       </h3>
 
       <div className="flex items-center gap-3 my-3">
@@ -45,9 +45,9 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           <div className="flex items-baseline justify-between mb-1">
             <span className="text-white text-xl font-bold">{forecast.probability}%</span>
             <span className="text-white/40 text-xs">
-              {locale === 'rw' ? s.forecasts.probability.rw : s.forecasts.probability.en}
+              {t(s.forecasts.probability)}
               {' · '}
-              {locale === 'rw' ? s.forecasts.confidence.rw : s.forecasts.confidence.en}: {forecast.confidence}%
+              {t(s.forecasts.confidence)}: {forecast.confidence}%
             </span>
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden" role="progressbar" aria-valuenow={forecast.probability} aria-valuemin={0} aria-valuemax={100} aria-label={`${forecast.probability}%`}>
@@ -57,7 +57,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       </div>
 
       <p className="text-white/60 text-[13px] leading-relaxed">
-        {locale === 'rw' ? s.forecasts.basedOn.rw : s.forecasts.basedOn.en}
+        {t(s.forecasts.basedOn)}
       </p>
       {forecast.predictedRangePerKg && (
         <p className="text-white/70 text-[13px] mt-1.5">
@@ -72,7 +72,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
         {forecast.evaluation === 'pending' ? (
           <span className="inline-flex items-center gap-1 text-white/45">
             <Clock3 size={12} aria-hidden="true" />
-            {locale === 'rw' ? s.forecasts.pending.rw : s.forecasts.pending.en}
+            {t(s.forecasts.pending)}
             {' · '}
             {forecast.resolvesAt.slice(0, 10)}
           </span>
@@ -103,15 +103,15 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       {open && (
         <div className="mt-3 space-y-3 text-[13px]">
           <div>
-            <h4 className="text-white/50 font-semibold text-xs mb-1">{locale === 'rw' ? s.forecasts.evidence.rw : s.forecasts.evidence.en}</h4>
+            <h4 className="text-white/50 font-semibold text-xs mb-1">{t(s.forecasts.evidence)}</h4>
             <ul className="space-y-1">{(locale === 'rw' ? forecast.evidenceKiny : forecast.evidenceEn).map((t, i) => <li key={i} className="text-white/75">• {t}</li>)}</ul>
           </div>
           <div>
-            <h4 className="text-white/50 font-semibold text-xs mb-1">{locale === 'rw' ? s.forecasts.assumptions.rw : s.forecasts.assumptions.en}</h4>
+            <h4 className="text-white/50 font-semibold text-xs mb-1">{t(s.forecasts.assumptions)}</h4>
             <ul className="space-y-1">{(locale === 'rw' ? forecast.assumptionsKiny : forecast.assumptionsEn).map((t, i) => <li key={i} className="text-white/75">• {t}</li>)}</ul>
           </div>
           <div>
-            <h4 className="text-white/50 font-semibold text-xs mb-1">{locale === 'rw' ? s.forecasts.invalidators.rw : s.forecasts.invalidators.en}</h4>
+            <h4 className="text-white/50 font-semibold text-xs mb-1">{t(s.forecasts.invalidators)}</h4>
             <ul className="space-y-1">{(locale === 'rw' ? forecast.invalidatorsKiny : forecast.invalidatorsEn).map((t, i) => <li key={i} className="text-white/75">• {t}</li>)}</ul>
           </div>
           {forecast.outcome && (

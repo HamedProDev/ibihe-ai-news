@@ -10,24 +10,24 @@ function pct(v: number | null): string {
 }
 
 export function TrackRecord({ record }: { record: TrackRecordData }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   return (
     <section aria-labelledby="tr-h" className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5">
       <h2 id="tr-h" className="flex items-center gap-2 text-white text-[15px] font-bold mb-1">
         <Award size={16} className="text-[#00c853]" aria-hidden="true" />
-        {locale === 'rw' ? s.forecasts.trackRecord.rw : s.forecasts.trackRecord.en}
+        {t(s.forecasts.trackRecord)}
       </h2>
       <p className="text-white/40 text-xs mb-4">
         {record.totalForecasts} {locale === 'rw' ? 'byahanuwe' : 'forecasts'}
         {' · '}
-        {record.evaluated} {locale === 'rw' ? s.forecasts.evaluated.rw : s.forecasts.evaluated.en}
+        {record.evaluated} {t(s.forecasts.evaluated)}
         {' · '}
-        {record.pending} {locale === 'rw' ? s.forecasts.pending.rw : s.forecasts.pending.en}
+        {record.pending} {t(s.forecasts.pending)}
       </p>
 
       <div className="grid sm:grid-cols-3 gap-3 mb-5">
         <div className="bg-white/5 rounded-xl p-3 text-center">
-          <p className="text-white/45 text-xs mb-1">{locale === 'rw' ? s.forecasts.accuracy.rw : s.forecasts.accuracy.en}</p>
+          <p className="text-white/45 text-xs mb-1">{t(s.forecasts.accuracy)}</p>
           <p className="text-white text-2xl font-bold">{pct(record.accuracy)}</p>
         </div>
         <div className="bg-white/5 rounded-xl p-3">

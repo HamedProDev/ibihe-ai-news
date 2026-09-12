@@ -1,267 +1,159 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Brain, LogOut, Menu, Search, ShieldCheck, User, X, Zap } from 'lucide-react';
+import { Bell, Menu, Newspaper, User, X } from 'lucide-react';
 import { useLocale } from '@/components/i18n/LanguageProvider';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { SearchBar } from '@/components/ui/SearchBar';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { LanguageSwitcher } from '@/components/ui/LanguageToggle';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { Ticker } from './Ticker';
 
-const NAV = [
-  { key: 'home', href: '/' },
-  { key: 'news', href: '/amakuru' },
-  { key: 'agriculture', href: '/ubuhinzi' },
-  { key: 'markets', href: '/isoko' },
-  { key: 'weather', href: '/ikirere' },
-  { key: 'economy', href: '/ubukungu' },
-  { key: 'explainers', href: '/ibisobanuro' },
-  { key: 'forecasts', href: '/ibimenyetso' },
-] as const;
-
-interface TickerData {
-  forecasts: Array<{ questionKiny: string; questionEn: string; probability: number }>;
+interface NavItem {
+  key: 'home' | 'africa' | 'world' | 'business' | 'politics' | 'technology' | 'health' | 'education' | 'sports' | 'culture' | 'environment';
+  href: string;
 }
 
-function Ticker() {
-  const { locale } = useLocale();
-  const { data } = useApi<TickerData>('/api/forecasts?horizon=14d');
-  const [idx, setIdx] = useState(0);
-  const items = (data?.forecasts ?? [])
-    .slice(0, 5)
-    .map((f) => `${locale === 'rw' ? f.questionKiny : f.questionEn} — ${f.probability}%`);
+const NAV: NavItem[] = [
+  { key: 'home', href: '/' },
+  { key: 'africa', href: '/amakuru' },
+  { key: 'world', href: '/amakuru?category=amahanga' },
+  { key: 'business', href: '/amakuru?category=ubukungu' },
+  { key: 'politics', href: '/amakuru?category=politiki' },
+  { key: 'technology', href: '/amakuru?category=ikoranabuhanga' },
+  { key: 'health', href: '/amakuru?category=ubuzima' },
+  { key: 'education', href: '/amakuru?category=uburezi' },
+  { key: 'sports', href: '/amakuru?category=imikino' },
+  { key: 'culture', href: '/amakuru?category=umuco' },
+  { key: 'environment', href: '/amakuru?category=ibidukikije' },
+];
 
-  useEffect(() => {
-    if (items.length < 2) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 4500);
-    return () => clearInterval(t);
-  }, [items.length]);
-
-  if (items.length === 0) return null;
+function AccountButton() {
+  const { t, s } = useLocale();
+  const { user, loading } = useAuth();
+  if (loading) return <span className="size-9 rounded-full bg-white/5 border border-white/10" aria-hidden />;
+  if (!user) {
+    return (
+      <Link
+        href="/login"
+        className="rounded-xl bg-[#00c853] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-[#00e65f]"
+      >
+        {t(s.auth.login)}
+      </Link>
+    );
+  }
+  const initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
   return (
-    <div className="bg-[#00c853] min-h-8 flex items-center gap-3 px-4 overflow-hidden" aria-live="polite">
-      <div className="flex items-center gap-1.5 shrink-0">
-        <Zap size={12} className="text-black" fill="black" aria-hidden="true" />
-        <span className="text-black text-[11px] font-bold tracking-widest uppercase">Ibihe</span>
-      </div>
-      <div className="w-px h-4 bg-black/20 shrink-0" aria-hidden="true" />
-      <div className="overflow-hidden flex-1">
-        <p key={idx} className="text-black text-[13px] font-medium animate-slide-in truncate">
-          {items[idx]}
-        </p>
-      </div>
-    </div>
+    <Link
+      href="/account"
+      aria-label={t(s.auth.account)}
+      title={user.name || user.email}
+      className="flex size-9 items-center justify-center rounded-full border border-[#00c853]/50 bg-[#00c853]/15 text-sm font-bold text-[#00c853] transition-colors hover:bg-[#00c853]/25"
+    >
+      {initial || <User size={16} aria-hidden />}
+    </Link>
   );
 }
 
 export default function Header() {
-  const { s, locale, pick } = useLocale();
+  const { t, s } = useLocale();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { user, loading: authLoading, logout, isAdmin } = useAuth();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional UI reset on navigation
-    setMenuOpen(false);
-    setSearchOpen(false);
-  }, [pathname]);
-
-  const navLabel = (key: (typeof NAV)[number]['key']): string =>
-    locale === 'rw' ? s.nav[key].rw : s.nav[key].en;
 
   return (
-    <header className="sticky top-0 z-50">
-      <div className={`bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 transition-shadow ${scrolled ? 'shadow-lg shadow-black/40' : ''}`}>
-        <div className="max-w-7xl mx-auto px-4 min-h-14 flex items-center justify-between gap-3 py-2">
-          <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Ibihe AI News — Ahabanza">
-            <span className="w-8 h-8 bg-[#00c853] rounded-lg flex items-center justify-center">
-              <Brain size={16} className="text-black" aria-hidden="true" />
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur">
+      {/* Main bar: logo / search / actions */}
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
+        <button
+          className="rounded-lg p-2 text-white/70 hover:bg-white/5 hover:text-white lg:hidden"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? t(s.common.close) : t(s.common.open)}
+        >
+          {menuOpen ? <X size={20} aria-hidden /> : <Menu size={20} aria-hidden />}
+        </button>
+        <Link href="/" className="flex shrink-0 items-center gap-2 focus:outline-none" aria-label="IbiheNews — home">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-[#00c853] text-black">
+            <Newspaper size={20} aria-hidden />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-lg font-extrabold tracking-tight text-white">
+              Ibihe<span className="text-[#00c853]">News</span>
             </span>
-            <span className="text-white font-bold text-lg tracking-tight">
-              Ibihe<span className="text-[#00c853]">AI</span>
+            <span className="hidden text-[10px] font-medium uppercase tracking-widest text-white/40 sm:block">
+              {t(s.brand.tagline)}
             </span>
+          </span>
+        </Link>
+        <div className="hidden min-w-0 flex-1 md:block">
+          <SearchBar />
+        </div>
+        <div className="ms-auto flex items-center gap-2">
+          <ThemeToggle />
+          <LanguageSwitcher compact />
+          <Link
+            href="/account"
+            aria-label={t(s.common.notifications)}
+            className="hidden rounded-lg p-2 text-white/70 transition-colors hover:bg-white/5 hover:text-white sm:block"
+          >
+            <Bell size={18} aria-hidden />
           </Link>
-
-          <nav aria-label={locale === 'rw' ? 'Paji nkuru' : 'Primary'} className="hidden lg:flex items-center gap-0.5">
-            {NAV.map((item) => {
-              const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-              return (
+          <AccountButton />
+        </div>
+      </div>
+      {/* Mobile search */}
+      <div className="px-4 pb-3 md:hidden">
+        <SearchBar />
+      </div>
+      {/* Section nav */}
+      <nav aria-label={t(s.common.primaryNav)} className="hidden border-t border-white/5 lg:block">
+        <ul className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-4">
+          {NAV.map((item) => {
+            const active =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === '/amakuru' && item.href !== '/amakuru'
+                  ? false
+                  : pathname === '/amakuru' && item.href === '/amakuru';
+            return (
+              <li key={item.key} className="shrink-0">
                 <Link
-                  key={item.key}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`px-2.5 py-1.5 rounded-lg text-[13px] transition-colors whitespace-nowrap ${
-                    active ? 'text-[#00c853] bg-[#00c853]/10 font-semibold' : 'text-white/60 hover:text-white hover:bg-white/5'
+                  className={`block border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+                    active
+                      ? 'border-[#00c853] text-white'
+                      : 'border-transparent text-white/60 hover:border-white/20 hover:text-white'
                   }`}
                 >
-                  {navLabel(item.key)}
+                  {t(s.nav[item.key])}
                 </Link>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center gap-1.5">
-            <div className="hidden md:block">
-              <LanguageToggle compact />
-            </div>
-            <Link
-              href="/baza"
-              className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold bg-[#00c853]/15 text-[#00c853] border border-[#00c853]/30 rounded-lg px-3 py-1.5 hover:bg-[#00c853]/25 transition-colors"
-            >
-              {pick(s.nav.ask)}
-            </Link>
-            <button
-              onClick={() => setSearchOpen((o) => !o)}
-              aria-expanded={searchOpen}
-              aria-label={locale === 'rw' ? s.search.label.rw : s.search.label.en}
-              className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <Search size={18} aria-hidden="true" />
-            </button>
-            <button
-              className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors relative"
-              aria-label={locale === 'rw' ? s.common.notifications.rw : s.common.notifications.en}
-            >
-              <Bell size={18} aria-hidden="true" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#00c853] rounded-full" aria-hidden="true" />
-            </button>
-            <ThemeToggle />
-            {!authLoading &&
-              (user ? (
-                <>
-                  {isAdmin && (
-                    <Link
-                      href="/admin/articles"
-                      aria-label={locale === 'rw' ? s.admin.title.rw : s.admin.title.en}
-                      className="text-[#00c853] hover:bg-[#00c853]/10 p-2 rounded-lg transition-colors"
-                    >
-                      <ShieldCheck size={18} aria-hidden="true" />
-                    </Link>
-                  )}
-                  <span
-                    title={user.email}
-                    className="hidden sm:inline-flex w-8 h-8 items-center justify-center rounded-full bg-[#00c853]/15 text-[#00c853] text-[13px] font-bold"
-                  >
-                    {(user.name || user.email).slice(0, 1).toUpperCase()}
-                  </span>
-                  <button
-                    onClick={logout}
-                    aria-label={locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
-                    title={locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
-                    className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <LogOut size={18} aria-hidden="true" />
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5 transition-colors"
-                >
-                  <User size={14} aria-hidden="true" />
-                  {locale === 'rw' ? s.auth.login.rw : s.auth.login.en}
-                </Link>
-              ))}
-            <button
-              className="lg:hidden text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-expanded={menuOpen}
-              aria-label={menuOpen ? 'Funga' : 'Fungura'}
-            >
-              {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
-            </button>
-          </div>
-        </div>
-
-        {searchOpen && (
-          <div className="max-w-7xl mx-auto px-4 pb-3">
-            <SearchBar autoFocus />
-          </div>
-        )}
-      </div>
-
-      <Ticker />
-
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      {/* Mobile menu */}
       {menuOpen && (
-        <nav aria-label={locale === 'rw' ? 'Paji nkuru' : 'Primary'} className="lg:hidden bg-[#0a0a0a] border-b border-white/10 max-h-[70vh] overflow-y-auto">
-          {NAV.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              className="block px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 text-sm border-b border-white/5"
-              onClick={() => setMenuOpen(false)}
-            >
-              {navLabel(item.key)}
-            </Link>
-          ))}
-          <div className="px-4 py-3 flex items-center gap-3 flex-wrap">
-            <LanguageToggle />
-            <Link
-              href="/baza"
-              onClick={() => setMenuOpen(false)}
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold bg-[#00c853]/15 text-[#00c853] border border-[#00c853]/30 rounded-lg px-3 py-1.5"
-            >
-              {pick(s.nav.ask)}
-            </Link>
-            {!authLoading &&
-              (user ? (
-                <>
-                  {isAdmin && (
-                    <Link
-                      href="/admin/articles"
-                      onClick={() => setMenuOpen(false)}
-                      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#00c853] border border-[#00c853]/30 rounded-lg px-3 py-1.5"
-                    >
-                      <ShieldCheck size={14} aria-hidden="true" />
-                      {locale === 'rw' ? s.admin.title.rw : s.admin.title.en}
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => {
-                      logout();
-                      setMenuOpen(false);
-                    }}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 border border-white/15 rounded-lg px-3 py-1.5"
-                  >
-                    <LogOut size={14} aria-hidden="true" />
-                    {locale === 'rw' ? s.auth.logout.rw : s.auth.logout.en}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/70 border border-white/15 rounded-lg px-3 py-1.5"
-                  >
-                    {locale === 'rw' ? s.auth.login.rw : s.auth.login.en}
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setMenuOpen(false)}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold bg-[#00c853] text-black rounded-lg px-3 py-1.5"
-                  >
-                    {locale === 'rw' ? s.auth.register.rw : s.auth.register.en}
-                  </Link>
-                </>
-              ))}
-          </div>
+        <nav aria-label={t(s.common.primaryNav)} className="border-t border-white/10 bg-[#0a0a0a] lg:hidden">
+          <ul className="max-h-[60vh] overflow-y-auto px-4 py-2">
+            {NAV.map((item) => (
+              <li key={item.key}>
+                <Link
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-white/75 hover:bg-white/5 hover:text-white"
+                >
+                  {t(s.nav[item.key])}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
       )}
+      <Ticker />
     </header>
   );
 }
-
-// Re-export to keep old named imports working if any.
-export { Header };

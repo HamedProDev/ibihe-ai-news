@@ -1,87 +1,61 @@
-'use client';
-
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import type { NewsCategory } from '@/types/news';
-import { useNews, useSearch } from '@/hooks/useNews';
-import NewsCard from '@/components/news/NewsCard';
-import { SearchBar } from '@/components/ui/SearchBar';
+import { listArticles, allArticles } from '@/lib/news/store';
+import { searchArticles } from '@/lib/news/search';
+import { NewsExplorer } from '@/components/home/NewsExplorer';
+import { TrendingStrip } from '@/components/home/TrendingStrip';
+import { Sidebar } from '@/components/home/Sidebar';
 import { DemoBanner } from '@/components/ui/Badges';
-import { EmptyState, ErrorState, LoadingSkeleton } from '@/components/ui/States';
-import { useLocale } from '@/components/i18n/LanguageProvider';
+import { SectionTitle } from '@/components/home/SectionTitle';
+import type { NewsCategory } from '@/types/news';
+import { STRINGS } from '@/lib/i18n/dictionaries';
 
-const CATS: Array<NewsCategory | 'all'> = ['all', 'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino', 'amahanga'];
+export const revalidate = 300;
 
-function Listing() {
-  const { s, locale } = useLocale();
-  const params = useSearchParams();
-  const q = (params.get('q') ?? '').trim();
-  const category = (params.get('category') ?? 'all') as NewsCategory | 'all';
+const CATEGORIES: Array<NewsCategory | 'all'> = [
+  'all', 'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
+  'uburezi', 'umuco', 'ibidukikije', 'amahanga', 'imvurugano',
+];
 
-  const news = useNews(q ? undefined : category);
-  const search = useSearch(q);
+export default async function AmakuruPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; q?: string }>;
+}) {
+  const params = await searchParams;
+  const rawCat = params.category ?? 'all';
+  const category = (CATEGORIES as string[]).includes(rawCat) ? (rawCat as NewsCategory | 'all') : 'all';
+  const q = (params.q ?? '').trim();
 
-  const loading = q ? search.loading : news.loading;
-  const error = q ? search.error : news.error;
-  const retry = q ? search.retry : news.retry;
-  const dataMode = q ? search.dataMode : news.dataMode;
-  const articles = q ? search.hits.map((h) => h.article) : news.full;
+  if (q) {
+    const { articles, dataMode } = await allArticles();
+    const hits = searchArticles(articles, q, 24).map((h) => h.article);
+    return (
+      <main className="mx-auto max-w-7xl px-4 py-6">
+        <DemoBanner mode={dataMode} />
+        <h1 className="mb-1 text-xl font-bold text-white">“{q}”</h1>
+        <p className="mb-5 text-sm text-white/50">{hits.length}</p>
+        <NewsExplorer key={q} initial={hits} query={q} limit={24} />
+      </main>
+    );
+  }
+
+  const { articles, dataMode } = await listArticles({ category, limit: 24 });
+  const topStories = [...articles].sort((a, b) => (b.views ?? 0) - (a.views ?? 0)).slice(0, 4);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-white text-xl font-bold mb-4">
-        {q ? `${locale === 'rw' ? s.search.label.rw : s.search.label.en}: “${q}”` : locale === 'rw' ? s.nav.news.rw : s.nav.news.en}
-      </h1>
-
-      <div className="mb-4 max-w-xl">
-        <SearchBar initial={q} />
+    <main className="mx-auto max-w-7xl px-4 py-6">
+      <DemoBanner mode={dataMode} />
+      <div className="mb-5">
+        <SectionTitle entry={STRINGS.filters.allNews} />
       </div>
-
-      {!q && (
-        <nav aria-label={locale === 'rw' ? 'Ibyiciro' : 'Categories'} className="flex gap-2 flex-wrap mb-6 pb-4 border-b border-white/10">
-          {CATS.map((c) => {
-            const active = category === c;
-            return (
-              <Link
-                key={c}
-                href={c === 'all' ? '/amakuru' : `/amakuru?category=${c}`}
-                aria-current={active ? 'page' : undefined}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                  active ? 'bg-[#00c853] text-black border-[#00c853]' : 'bg-transparent text-white/60 border-white/15 hover:border-white/30 hover:text-white'
-                }`}
-              >
-                {locale === 'rw' ? s.categories[c].rw : s.categories[c].en}
-              </Link>
-            );
-          })}
-        </nav>
-      )}
-
-      {loading ? (
-        <LoadingSkeleton lines={4} />
-      ) : error ? (
-        <ErrorState error={error} onRetry={retry} />
-      ) : articles.length === 0 ? (
-        <EmptyState message={q ? (locale === 'rw' ? s.search.noResults.rw : s.search.noResults.en) : undefined} />
-      ) : (
-        <div>
-          <DemoBanner mode={dataMode} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {articles.map((a) => (
-              <NewsCard key={a.id} article={a} />
-            ))}
-          </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <NewsExplorer key={category} initial={articles} initialFilters={{ category }} limit={24} />
         </div>
-      )}
+        <Sidebar topStories={topStories} />
+      </div>
+      <div className="mt-8">
+        <TrendingStrip />
+      </div>
     </main>
-  );
-}
-
-export default function NewsPage() {
-  return (
-    <Suspense fallback={<main className="max-w-7xl mx-auto px-4 py-6"><LoadingSkeleton lines={4} /></main>}>
-      <Listing />
-    </Suspense>
   );
 }

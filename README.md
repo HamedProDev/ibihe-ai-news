@@ -1,8 +1,8 @@
-# Ibihe AI News 🇷🇼
+# IbiheNews 🇷🇼
 
-**Rwanda Information Intelligence Platform — Kinyarwanda-first.**
+**African News & Intelligence — Kinyarwanda-first, powered by AI + people.**
 
-Ibihe answers four questions for every important story:
+IbiheNews answers four questions for every important story:
 
 > **What happened → Why does it matter → What does the data say → What could happen next?**
 
@@ -11,6 +11,11 @@ News → Understanding, not just News → Reading.
 ## Principles (non-negotiable)
 
 - **Kinyarwanda-first** — UI, summaries, search, agriculture terminology.
+- **Six languages, real switching** — Kinyarwanda, English, Français, Kiswahili,
+  العربية (RTL) and Hausa. Registration asks your primary language and the
+  site remembers it.
+- **AI + people** — AI gathers and drafts; human authors verify and publish.
+  AI-generated content is always labeled.
 - **Evidence & provenance** — every story shows its sources, publication time and fetch time.
 - **No fabrication** — never invent news, sources, quotes, statistics or events.
 - **Forecasts are probabilities** — agriculture only, always with evidence, assumptions, invalidators and a public track record.
@@ -154,10 +159,13 @@ npm run db:migrate
      across statements reliably).
 3. `cp .env.example .env.local`, set `DATABASE_URL` to the **direct** URL,
    plus `CRON_SECRET` / `ADMIN_SECRET` (`openssl rand -hex 32`).
-4. `npm run db:migrate` → expect `applied=1 … + 001_init.sql`.
-5. Verify in Supabase **Table Editor**: 7 tables
+4. `npm run db:migrate` → expect `applied=3` (`001_init.sql`, `002_auth.sql`,
+   `003_frontend.sql`: user locales, authors, briefings, tips, subscribers).
+5. Verify in Supabase **Table Editor**: 12 tables
    (`schema_migrations`, `articles`, `market_observations`, `forecasts`,
-   `review_items`, `ingest_runs`, `meta_store`).
+   `review_items`, `ingest_runs`, `meta_store`, `users`, `sessions`,
+   `authors`, `briefings`, `tips`, `subscribers` — the last 5 arrive with
+   migrations 002/003).
 6. Restart dev, run one ingestion to fill articles:
    `npm run worker:ingest` (or `POST /api/ingest` with the cron bearer).
 7. On Vercel: set `DATABASE_URL` to the **pooled** URL + the same secrets.
@@ -217,13 +225,15 @@ append-only history and mark article provenance as `reviewed`.
 
 ### 6. Scheduler
 
-- **Vercel**: `vercel.json` crons call `/api/ingest?run=1` (6-hourly) and
-  `/api/cron/market` (daily). Set `CRON_SECRET` in project env vars —
-  Vercel sends it as the Bearer token automatically.
-- **Any cron**: `POST /api/ingest` and `GET /api/cron/market` with
-  `Authorization: Bearer $CRON_SECRET`, or run the workers directly:
-  `npm run worker:ingest`, `npm run worker:market`,
-  `npm run worker:forecasts`, `npm run worker:weather`.
+- **Vercel**: `vercel.json` crons call `/api/ingest?run=1` (6-hourly),
+  `/api/cron/market` (daily) and `/api/cron/briefing` (daily 05:15 UTC —
+  builds the AI daily briefing from the day's news). Set `CRON_SECRET`
+  in project env vars — Vercel sends it as the Bearer token automatically.
+- **Any cron**: `POST /api/ingest`, `GET /api/cron/market` and
+  `GET /api/cron/briefing` with `Authorization: Bearer $CRON_SECRET`,
+  or run the workers directly: `npm run worker:ingest`,
+  `npm run worker:market`, `npm run worker:forecasts`,
+  `npm run worker:weather`.
 
 ### 7. Deploy + verify
 
@@ -250,6 +260,9 @@ build → smoke on every push.
 - [x] Human review queue for AI summaries/translations
 - [x] Accounts + admin article CRUD + light/dark theme + article images
 - [x] Manus agent API ready (`POST /api/ai/manus`)
+- [x] IbiheNews frontend: 6 languages, filters, authors, daily AI briefing,
+      trending, tips, newsletter, saved stories
+- [ ] Full admin dashboard (author management, tips inbox, analytics)
 - [ ] PWA offline + SMS price alerts for farmers
 - [ ] Forecast model v0.2 with backtested calibration
 - [ ] Auth.js admin auth + Redis rate limiting

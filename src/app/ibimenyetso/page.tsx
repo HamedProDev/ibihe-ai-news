@@ -12,7 +12,7 @@ import { useLocale } from '@/components/i18n/LanguageProvider';
 const HORIZONS: ForecastHorizon[] = ['7d', '14d', '30d'];
 
 export default function ForecastsPage() {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const [horizon, setHorizon] = useState<ForecastHorizon>('14d');
   const { forecasts, trackRecord, modelVersion, loading, error, retry, dataMode } = useForecasts({ horizon });
 
@@ -22,7 +22,7 @@ export default function ForecastsPage() {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6">
       <h1 className="text-white text-xl font-bold mb-1">
-        {locale === 'rw' ? s.forecasts.title.rw : s.forecasts.title.en}
+        {t(s.forecasts.title)}
       </h1>
       <p className="text-white/50 text-sm mb-1">
         {locale === 'rw'
@@ -30,7 +30,7 @@ export default function ForecastsPage() {
           : 'Forecasts are probabilities, not facts. Each shows evidence, assumptions and invalidators.'}
       </p>
       <p className="text-white/35 text-xs mb-5">
-        {locale === 'rw' ? s.forecasts.model.rw : s.forecasts.model.en}: {modelVersion || '…'}
+        {t(s.forecasts.model)}: {modelVersion || '…'}
         {' · '}
         {locale === 'rw' ? 'Ubuhinzi gusa — nta hanura rya politiki' : 'Agriculture only — no political forecasts'}
       </p>
@@ -63,7 +63,7 @@ export default function ForecastsPage() {
         <div className="space-y-8">
           <section aria-labelledby="fc-pending">
             <h2 id="fc-pending" className="text-white text-[15px] font-bold mb-3">
-              {locale === 'rw' ? s.forecasts.pending.rw : s.forecasts.pending.en} ({pending.length})
+              {t(s.forecasts.pending)} ({pending.length})
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {pending.map((f) => <ForecastCard key={f.id} forecast={f} />)}
@@ -75,7 +75,7 @@ export default function ForecastsPage() {
           {decided.length > 0 && (
             <section aria-labelledby="fc-decided">
               <h2 id="fc-decided" className="text-white text-[15px] font-bold mb-3">
-                {locale === 'rw' ? s.forecasts.evaluated.rw : s.forecasts.evaluated.en} ({decided.length})
+                {t(s.forecasts.evaluated)} ({decided.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {decided.slice(0, 6).map((f) => <ForecastCard key={f.id} forecast={f} />)}

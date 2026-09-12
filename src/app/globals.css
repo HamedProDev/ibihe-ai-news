@@ -123,3 +123,21 @@ html[data-theme="light"] .text-blue-400 { color: #1565c0; }
 html[data-theme="light"] .text-green-400,
 html[data-theme="light"] .text-green-300,
 html[data-theme="light"] .text-emerald-300 { color: #0a7a35; }
+
+/* Breaking-news ticker */
+@keyframes ibihe-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ibihe-ticker 45s linear infinite;
+}
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+[dir="rtl"] .animate-ticker {
+  animation-direction: reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker { animation: none; }
+}

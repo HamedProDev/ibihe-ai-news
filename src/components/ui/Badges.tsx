@@ -14,8 +14,8 @@ const STATUS_STYLES: Record<ContentStatus, string> = {
 };
 
 export function ContentStatusBadge({ status, size = 'sm' }: { status: ContentStatus; size?: 'xs' | 'sm' }) {
-  const { s, locale } = useLocale();
-  const label = locale === 'rw' ? s.status[status].rw : s.status[status].en;
+  const { t, s} = useLocale();
+  const label = t(s.status[status]);
   return (
     <span
       className={`inline-flex items-center gap-1 rounded border font-medium ${STATUS_STYLES[status]} ${
@@ -30,12 +30,12 @@ export function ContentStatusBadge({ status, size = 'sm' }: { status: ContentSta
 }
 
 export function AIBadge({ ai, size = 'sm' }: { ai: AIGeneration; size?: 'xs' | 'sm' }) {
-  const { s, locale } = useLocale();
+  const { t, s} = useLocale();
   const label = ai.isRuleBased
-    ? locale === 'rw' ? s.ai.ruleBased.rw : s.ai.ruleBased.en
-    : locale === 'rw' ? s.ai.generated.rw : s.ai.generated.en;
+    ? t(s.ai.ruleBased)
+    : t(s.ai.generated);
   const title = `${ai.model} · ${ai.promptVersion} · ${ai.generatedAt.slice(0, 10)} · ${
-    ai.reviewStatus === 'reviewed' ? (locale === 'rw' ? s.ai.reviewed.rw : s.ai.reviewed.en) : locale === 'rw' ? s.ai.unreviewed.rw : s.ai.unreviewed.en
+    ai.reviewStatus === 'reviewed' ? (t(s.ai.reviewed)) : t(s.ai.unreviewed)
   }`;
   return (
     <span
@@ -69,15 +69,15 @@ export function CategoryBadge({ category, label }: { category: string; label: st
 
 /** Honest banner shown whenever demo/illustrative data is displayed. */
 export function DemoBanner({ mode }: { mode: DataMode }) {
-  const { s, locale } = useLocale();
+  const { t, s} = useLocale();
   if (mode === 'live') return null;
   return (
     <div role="note" className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2.5 mb-4">
       <FlaskConical size={15} className="text-amber-300 mt-0.5 shrink-0" aria-hidden="true" />
       <p className="text-amber-200/90 text-xs leading-relaxed">
-        <strong className="font-semibold">{locale === 'rw' ? s.data.demo.rw : s.data.demo.en}</strong>
+        <strong className="font-semibold">{t(s.data.demo)}</strong>
         {' — '}
-        {locale === 'rw' ? s.data.demoExplain.rw : s.data.demoExplain.en}
+        {t(s.data.demoExplain)}
       </p>
     </div>
   );

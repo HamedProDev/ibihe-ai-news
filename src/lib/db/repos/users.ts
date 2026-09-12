@@ -7,7 +7,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { readStore, writeStore } from '../json-store.ts';
 import { isPostgresEnabled, pgQuery } from '../postgres.ts';
 
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'author' | 'user';
 
 export interface User {
   id: string;
@@ -15,6 +15,8 @@ export interface User {
   name: string;
   passwordHash: string;
   role: UserRole;
+  /** Primary UI language (rw|en|fr|sw|ar|ha). */
+  locale: string;
   createdAt: string;
 }
 
@@ -30,6 +32,7 @@ export interface PublicUser {
   email: string;
   name: string;
   role: UserRole;
+  locale: string;
   createdAt: string;
 }
 
@@ -37,7 +40,7 @@ const USERS_STORE = 'users';
 const SESSIONS_STORE = 'sessions';
 
 export function publicUser(u: User): PublicUser {
-  return { id: u.id, email: u.email, name: u.name, role: u.role, createdAt: u.createdAt };
+  return { id: u.id, email: u.email, name: u.name, role: u.role, locale: u.locale || 'rw', createdAt: u.createdAt };
 }
 
 export function hashToken(token: string): string {
@@ -53,14 +56,15 @@ export function newSessionToken(): string {
 }
 
 function rowToUser(r: {
-  id: string; email: string; name: string; password_hash: string; role: string; created_at: string;
+  id: string; email: string; name: string; password_hash: string; role: string; locale?: string; created_at: string;
 }): User {
   return {
     id: r.id,
     email: r.email,
     name: r.name,
     passwordHash: r.password_hash,
-    role: r.role === 'admin' ? 'admin' : 'user',
+    role: r.role === 'admin' ? 'admin' : r.role === 'author' ? 'author' : 'user',
+    locale: r.locale || 'rw',
     createdAt: new Date(r.created_at).toISOString(),
   };
 }
@@ -82,8 +86,8 @@ export async function findUserByEmailRepo(email: string): Promise<User | null> {
   if (isPostgresEnabled()) {
     try {
       const r = await pgQuery<{
-        id: string; email: string; name: string; password_hash: string; role: string; created_at: string;
-      }>('SELECT id, email, name, password_hash, role, created_at FROM users WHERE email = $1', [norm]);
+        id: string; email: string; name: string; password_hash: string; role: string; locale: string; created_at: string;
+      }>('SELECT id, email, name, password_hash, role, locale, created_at FROM users WHERE email = $1', [norm]);
       return r.rows[0] ? rowToUser(r.rows[0]) : null;
     } catch (err) {
       console.error('[db] users pg find failed, falling back to json:', err instanceof Error ? err.message : err);
@@ -97,8 +101,8 @@ export async function findUserByIdRepo(id: string): Promise<User | null> {
   if (isPostgresEnabled()) {
     try {
       const r = await pgQuery<{
-        id: string; email: string; name: string; password_hash: string; role: string; created_at: string;
-      }>('SELECT id, email, name, password_hash, role, created_at FROM users WHERE id = $1', [id]);
+        id: string; email: string; name: string; password_hash: string; role: string; locale: string; created_at: string;
+      }>('SELECT id, email, name, password_hash, role, locale, created_at FROM users WHERE id = $1', [id]);
       return r.rows[0] ? rowToUser(r.rows[0]) : null;
     } catch (err) {
       console.error('[db] users pg find failed, falling back to json:', err instanceof Error ? err.message : err);
@@ -113,9 +117,9 @@ export async function createUserRepo(user: User): Promise<void> {
   if (isPostgresEnabled()) {
     try {
       await pgQuery(
-        `INSERT INTO users (id, email, name, password_hash, role, created_at)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [norm.id, norm.email, norm.name, norm.passwordHash, norm.role, norm.createdAt],
+        `INSERT INTO users (id, email, name, password_hash, role, locale, created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [norm.id, norm.email, norm.name, norm.passwordHash, norm.role, norm.locale || 'rw', norm.createdAt],
       );
       return;
     } catch (err) {
@@ -198,4 +202,26 @@ export async function purgeExpiredSessionsRepo(nowIso?: string): Promise<void> {
   const all = (await readStore<Session[]>(SESSIONS_STORE))?.value ?? [];
   const fresh = all.filter((s) => s.expiresAt >= now);
   if (fresh.length !== all.length) await writeStore(SESSIONS_STORE, fresh);
+}
+
+/** Persist the user's preferred UI language. Returns false if unknown id. */
+export async function updateUserLocaleRepo(id: string, locale: string): Promise<boolean> {
+  if (isPostgresEnabled()) {
+    try {
+      const r = await pgQuery<{ id: string }>('UPDATE users SET locale = $2 WHERE id = $1 RETURNING id', [id, locale]);
+      if (r.rows[0]) return true;
+    } catch (err) {
+      console.error('[db] users pg locale update failed, falling back to json:', err instanceof Error ? err.message : err);
+    }
+  }
+  try {
+    const users = (await readStore<User[]>(USERS_STORE))?.value ?? [];
+    const u = users.find((x) => x.id === id);
+    if (!u) return false;
+    u.locale = locale;
+    await writeStore(USERS_STORE, users);
+    return true;
+  } catch {
+    return false;
+  }
 }

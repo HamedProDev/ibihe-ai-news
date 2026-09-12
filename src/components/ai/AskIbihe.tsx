@@ -23,11 +23,11 @@ function renderLite(text: string): React.ReactNode[] {
 }
 
 export function AskIbihe({ compact = false }: { compact?: boolean }) {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const { messages, loading, error, ask, clear } = useAsk();
   const [value, setValue] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
-  const examples = locale === 'rw' ? s.ask.examples.rw : s.ask.examples.en;
+  const examples = s.ask.examples[locale] ?? s.ask.examples.en;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -43,7 +43,7 @@ export function AskIbihe({ compact = false }: { compact?: boolean }) {
           <Bot size={14} className="text-[#00c853]" aria-hidden="true" />
         </div>
         <h2 id="ask-h" className="text-white text-[15px] font-bold">
-          {locale === 'rw' ? s.nav.ask.rw : s.nav.ask.en}
+          {t(s.nav.ask)}
         </h2>
         {messages.length > 0 && (
           <button
@@ -83,7 +83,7 @@ export function AskIbihe({ compact = false }: { compact?: boolean }) {
                 {m.answer && m.answer.citations.length > 0 && (
                   <div className="pt-1.5 border-t border-white/10">
                     <p className="text-white/40 text-[11px] mb-1">
-                      {locale === 'rw' ? s.ask.sources.rw : s.ask.sources.en}:
+                      {t(s.ask.sources)}:
                     </p>
                     <ul className="space-y-0.5">
                       {m.answer.citations.map((c) => (
@@ -108,7 +108,7 @@ export function AskIbihe({ compact = false }: { compact?: boolean }) {
 
       {loading && (
         <p className="text-white/45 text-[13px] my-2 animate-pulse" role="status">
-          {locale === 'rw' ? s.ask.thinking.rw : s.ask.thinking.en}
+          {t(s.ask.thinking)}
         </p>
       )}
       {error && (
@@ -128,13 +128,13 @@ export function AskIbihe({ compact = false }: { compact?: boolean }) {
         className="flex gap-2 mt-2"
       >
         <label htmlFor="ask-input" className="sr-only">
-          {locale === 'rw' ? s.ask.placeholder.rw : s.ask.placeholder.en}
+          {t(s.ask.placeholder)}
         </label>
         <input
           id="ask-input"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={locale === 'rw' ? s.ask.placeholder.rw : s.ask.placeholder.en}
+          placeholder={t(s.ask.placeholder)}
           disabled={loading}
           className="flex-1 bg-white/5 border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#00c853]/60 disabled:opacity-50"
         />
@@ -144,7 +144,7 @@ export function AskIbihe({ compact = false }: { compact?: boolean }) {
           className="shrink-0 bg-[#00c853] hover:bg-[#00e65f] disabled:opacity-40 text-black font-semibold text-sm rounded-xl px-3.5 py-2.5 inline-flex items-center gap-1.5 transition-colors"
         >
           <Send size={14} aria-hidden="true" />
-          <span className="hidden sm:inline">{locale === 'rw' ? s.ask.send.rw : s.ask.send.en}</span>
+          <span className="hidden sm:inline">{t(s.ask.send)}</span>
         </button>
       </form>
     </section>

@@ -22,6 +22,16 @@ const PAGES = [
   '/ubukungu',
   '/login',
   '/register',
+  '/account',
+  '/briefing',
+  '/about',
+  '/contact',
+  '/advertise',
+  '/careers',
+  '/privacy',
+  '/terms',
+  '/help',
+  '/amakuru?category=politiki',
   '/admin/review',
   '/admin/articles',
   '/admin/articles/new',
@@ -30,6 +40,9 @@ const PAGES = [
 const APIS = [
   '/api',
   '/api/news?limit=1',
+  '/api/news?category=politiki&time=7d&country=RW&sort=views&limit=1',
+  '/api/authors',
+  '/api/sources',
   '/api/articles/demo-1',
   '/api/search?q=ibirayi',
   '/api/briefing',
@@ -109,7 +122,7 @@ await check('POST /api/auth/register -> 201 + cookie, me -> 200, logout -> 401 a
   const reg = await fetch(BASE + '/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: 'smoke-pass-123', name: 'Smoke' }),
+    body: JSON.stringify({ email, password: 'smoke-pass-123', name: 'Smoke', locale: 'sw' }),
   });
   assertOk(reg.status === 201, `register status=${reg.status}`);
   const cookies = typeof reg.headers.getSetCookie === 'function' ? reg.headers.getSetCookie() : [];
@@ -119,6 +132,7 @@ await check('POST /api/auth/register -> 201 + cookie, me -> 200, logout -> 401 a
   assertOk(me.status === 200, `me status=${me.status}`);
   const meJson = await me.json();
   assertOk(meJson.data?.user?.email === email, 'me email mismatch');
+  assertOk(meJson.data?.user?.locale === 'sw', 'locale not persisted');
   const out = await fetch(BASE + '/api/auth/logout', { method: 'POST', headers: { Cookie: session } });
   assertOk(out.status === 200, `logout status=${out.status}`);
   const me2 = await fetch(BASE + '/api/auth/me', { headers: { Cookie: session } });
@@ -169,6 +183,65 @@ await check('POST /api/ai/manus without key -> 503 manus-disabled', async () => 
 await check('POST /api/market/import without secret -> 401/503', async () => {
   const res = await fetch(BASE + '/api/market/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
   assertOk(res.status === 401 || res.status === 503, `status=${res.status}`);
+});
+
+
+await check('POST /api/articles/demo-1/view -> 200 (best-effort count)', async () => {
+  const res = await fetch(BASE + '/api/articles/demo-1/view', { method: 'POST' });
+  assertOk(res.status === 200, `status=${res.status}`);
+});
+
+await check('POST /api/tips validates + accepts', async () => {
+  const bad = await fetch(BASE + '/api/tips', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'short' }),
+  });
+  assertOk(bad.status === 400, `bad-message status=${bad.status}`);
+  const good = await fetch(BASE + '/api/tips', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: 'Smoke tip: this is a test message long enough.', kind: 'news' }),
+  });
+  assertOk(good.status === 200, `good status=${good.status}`);
+  const json = await good.json();
+  assertOk(json.data?.received === true, 'tip not received');
+});
+
+await check('POST /api/newsletter is idempotent', async () => {
+  const email = `nl-${Date.now()}@example.com`;
+  const mk = () => fetch(BASE + '/api/newsletter', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, locale: 'fr' }),
+  });
+  const first = await mk();
+  assertOk(first.status === 200, `first status=${first.status}`);
+  assertOk((await first.json()).data?.exists === false, 'first should be new');
+  const second = await mk();
+  assertOk((await second.json()).data?.exists === true, 'second should exist');
+  const bad = await fetch(BASE + '/api/newsletter', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'nope' }),
+  });
+  assertOk(bad.status === 400, `bad-email status=${bad.status}`);
+});
+
+await check('PATCH /api/me/locale without session -> 401', async () => {
+  const res = await fetch(BASE + '/api/me/locale', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ locale: 'ar' }),
+  });
+  assertOk(res.status === 401, `status=${res.status}`);
+});
+
+await check('GET /api/cron/briefing unauthenticated -> 401/503', async () => {
+  const res = await fetch(BASE + '/api/cron/briefing');
+  assertOk(res.status === 401 || res.status === 503, `status=${res.status}`);
+});
+
+await check('POST /api/ask with 6-locale code still answers', async () => {
+  const res = await fetch(BASE + '/api/ask', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: 'Why are potato prices rising?', locale: 'ha' }),
+  });
+  assertOk(res.status === 200, `status=${res.status}`);
+  const json = await res.json();
+  assertOk(typeof json.data?.answerEn === 'string', 'missing English answer');
 });
 
 if (failures > 0) {

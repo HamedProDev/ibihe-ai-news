@@ -6,7 +6,8 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'author' | 'user';
+  locale: string;
   createdAt: string;
 }
 

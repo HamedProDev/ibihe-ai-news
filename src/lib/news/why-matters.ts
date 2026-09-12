@@ -1,3 +1,4 @@
+import type { Locale } from '@/lib/i18n/dictionaries';
 /**
  * "Kuki ari ingenzi?" — grounded, template-based explanation builder.
  *
@@ -85,7 +86,7 @@ export function buildWhyItMatters(article: Article): WhyItMatters[] {
   return out;
 }
 
-export function audienceLabel(audience: WhyAudience, locale: 'rw' | 'en'): string {
+export function audienceLabel(audience: WhyAudience, locale: Locale): string {
   if (locale === 'rw') return AUDIENCE_KINY[audience];
   const en: Record<WhyAudience, string> = {
     citizens: 'Citizens',

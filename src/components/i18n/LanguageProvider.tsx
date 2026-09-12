@@ -1,14 +1,20 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { STRINGS, type Locale, type Strings } from '@/lib/i18n/dictionaries';
+import { LOCALE_META, STRINGS, isLocale, tx, type LangEntry, type Locale, type Strings } from '@/lib/i18n/dictionaries';
+
+export type { Locale };
 
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (l: Locale) => void;
   s: Strings;
-  /** Pick a bilingual string. */
+  /** Pick a 6-language string with en→rw fallback. */
+  t: (entry: LangEntry) => string;
+  /** Pick a legacy bilingual string. */
   pick: (entry: { rw: string; en: string }) => string;
+  dir: 'ltr' | 'rtl';
+  label: string;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -22,9 +28,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional one-time hydration from localStorage
-      if (saved === 'rw' || saved === 'en') setLocaleState(saved);
-      // Keep <html lang> in sync for screen readers.
-      document.documentElement.lang = saved === 'en' ? 'en' : 'rw';
+      if (isLocale(saved)) setLocaleState(saved);
     } catch {
       /* storage unavailable — stay Kinyarwanda-first */
     }
@@ -34,20 +38,35 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(l);
     try {
       window.localStorage.setItem(STORAGE_KEY, l);
-      document.documentElement.lang = l;
     } catch {
       /* ignore */
     }
   }, []);
+
+  const dir = LOCALE_META.find((m) => m.code === locale)?.dir ?? 'ltr';
+  const label = LOCALE_META.find((m) => m.code === locale)?.label ?? locale;
+
+  useEffect(() => {
+    // Keep <html lang>/<html dir> in sync for screen readers + RTL.
+    try {
+      document.documentElement.lang = locale;
+      document.documentElement.dir = dir;
+    } catch {
+      /* non-DOM */
+    }
+  }, [locale, dir]);
 
   const value = useMemo<LocaleContextValue>(
     () => ({
       locale,
       setLocale,
       s: STRINGS,
+      t: (entry) => tx(locale, entry),
       pick: (entry) => (locale === 'rw' ? entry.rw : entry.en),
+      dir,
+      label,
     }),
-    [locale, setLocale],
+    [locale, setLocale, dir, label],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;

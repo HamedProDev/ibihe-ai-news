@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/api/envelope';
-import { requireAdminAuth } from '@/lib/auth/session';
+import { requireStaffAuth } from '@/lib/auth/session';
 import { deleteArticleRepo, getArticleRepo, upsertArticlesRepo } from '@/lib/db/repos/articles';
 import type { NewsCategory } from '@/types/news';
 import type { ContentStatus } from '@/types/provenance';
@@ -12,7 +12,7 @@ const CATEGORIES = new Set([
 const STATUSES = new Set(['verified', 'developing', 'multi-source', 'analysis', 'forecast', 'opinion']);
 
 async function guard(req: NextRequest) {
-  const admin = await requireAdminAuth(req);
+  const admin = await requireStaffAuth(req);
   if (!admin) {
     return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/api/envelope';
-import { requireAdminAuth } from '@/lib/auth/session';
+import { requireStaffAuth } from '@/lib/auth/session';
 import { listArticlesRepo, upsertArticlesRepo } from '@/lib/db/repos/articles';
 import type { Article, NewsCategory } from '@/types/news';
 import type { ContentStatus } from '@/types/provenance';
@@ -13,7 +13,7 @@ const STATUSES: ContentStatus[] = ['verified', 'developing', 'multi-source', 'an
 
 /** Admin article list (stored rows only; supports q/limit/offset). */
 export async function GET(req: NextRequest) {
-  const admin = await requireAdminAuth(req);
+  const admin = await requireStaffAuth(req);
   if (!admin) {
     return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }
@@ -39,7 +39,7 @@ function asString(v: unknown, max: number): string {
 
 /** Create an article by hand (editorial content, fully human-authored). */
 export async function POST(req: NextRequest) {
-  const admin = await requireAdminAuth(req);
+  const admin = await requireStaffAuth(req);
   if (!admin) {
     return err('unauthorized', 'Nta burenganzira. Injira nka admin.', 'Unauthorized. Sign in as admin.', 401);
   }

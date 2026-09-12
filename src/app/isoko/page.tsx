@@ -12,7 +12,7 @@ import type { CommodityId } from '@/types/market';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 export default function MarketsPage() {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const [filters, setFilters] = useState<FilterValue>({ commodity: '', district: '', market: '', windowDays: 30 });
   const { observations, trends, districts, markets, loading, error, retry, dataMode } = useMarketData({
     commodity: filters.commodity && filters.commodity in COMMODITIES ? (filters.commodity as CommodityId) : undefined,
@@ -24,7 +24,7 @@ export default function MarketsPage() {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6">
       <h1 className="text-white text-xl font-bold mb-1">
-        {locale === 'rw' ? s.markets.title.rw : s.markets.title.en}
+        {t(s.markets.title)}
       </h1>
       <p className="text-white/50 text-sm mb-5">
         {locale === 'rw'
@@ -53,7 +53,7 @@ export default function MarketsPage() {
           {observations.length > 0 && (
             <section aria-labelledby="obs-h">
               <h2 id="obs-h" className="text-white text-[15px] font-bold mb-3">
-                {locale === 'rw' ? s.markets.observations.rw : s.markets.observations.en} ({observations.length})
+                {t(s.markets.observations)} ({observations.length})
               </h2>
               <ObservationTable observations={observations.slice(0, 60)} />
             </section>

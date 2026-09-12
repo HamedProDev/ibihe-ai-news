@@ -9,7 +9,7 @@ import { RWANDA_DISTRICTS } from '@/lib/geo/rwanda';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 
 function WeatherInner() {
-  const { s, locale } = useLocale();
+  const { t, s, locale } = useLocale();
   const params = useSearchParams();
   const initial = params.get('district') ?? 'Gasabo';
   const [district, setDistrict] = useState(initial);
@@ -18,7 +18,7 @@ function WeatherInner() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-white text-xl font-bold mb-1">
-        {locale === 'rw' ? s.weather.title.rw : s.weather.title.en}
+        {t(s.weather.title)}
       </h1>
       <p className="text-white/50 text-sm mb-5">
         {locale === 'rw'
@@ -27,7 +27,7 @@ function WeatherInner() {
       </p>
 
       <label className="flex flex-col gap-1.5 mb-5 max-w-xs">
-        <span className="text-xs text-white/45">{locale === 'rw' ? s.markets.district.rw : s.markets.district.en}</span>
+        <span className="text-xs text-white/45">{t(s.markets.district)}</span>
         <select
           value={district}
           onChange={(e) => setDistrict(e.target.value)}

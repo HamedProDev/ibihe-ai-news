@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Ibihe AI News — Amakuru n’Ibimenyetso',
+    name: 'IbiheNews — Amakuru n’Ibimenyetso',
     short_name: 'Ibihe',
     description: 'Amakuru yizewe, isoko, ikirere n’ihanura — mu Kinyarwanda.',
     start_url: '/',
