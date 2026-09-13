@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { CATEGORY_META } from '@/lib/news/category-registry';
 import { Empty, ErrorNote, Loading, Panel, StateDot, Toast, useToast } from '@/components/admin-control/ui';
-import { longDate, timeAgo } from '@/lib/i18n/timeago';
+import { longDate } from '@/lib/i18n/timeago';
 import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 /* ------------------------------- types ------------------------------- */
