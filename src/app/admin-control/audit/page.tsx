@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { adminGet } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ChipGroup, Empty, ErrorNote, Loading, Panel } from '@/components/admin-control/ui';
-import { longDate, timeAgo } from '@/lib/i18n/timeago';
+import { longDate } from '@/lib/i18n/timeago';
 import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 interface Entry {
