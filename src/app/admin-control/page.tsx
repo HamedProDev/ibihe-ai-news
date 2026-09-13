@@ -14,6 +14,7 @@ import { useLocale } from '@/components/i18n/LanguageProvider';
 import { CATEGORY_META } from '@/lib/news/category-registry';
 import { Empty, ErrorNote, Loading, Panel, StateDot, Toast, useToast } from '@/components/admin-control/ui';
 import { longDate, timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 /* ------------------------------- types ------------------------------- */
 
@@ -448,7 +449,7 @@ export default function AdminDashboardPage() {
                 {data.ingestion?.lastRunAt ? (
                   <>
                     <RefreshCw size={11} aria-hidden />
-                    {al('Inkuru zashyizwemo', 'Ingested')} {timeAgo(data.ingestion.lastRunAt, locale)}
+                    {al('Inkuru zashyizwemo', 'Ingested')} <TimeAgo iso={data.ingestion.lastRunAt} locale={locale} />
                     {data.ingestion.addedLastRun ? ` (+${data.ingestion.addedLastRun})` : ''}
                   </>
                 ) : (
@@ -556,7 +557,7 @@ export default function AdminDashboardPage() {
                               </Link>
                             </div>
                             <span className="mt-0.5 block truncate text-[11px] text-ink/40">
-                              {timeAgo(a.publishedAt, locale)}
+                              <TimeAgo iso={a.publishedAt} locale={locale} />
                               {a.authorName ? ` · ${a.authorName}` : ''}
                               {a.district ? ` · ${a.district}` : ''}
                             </span>
@@ -667,7 +668,7 @@ export default function AdminDashboardPage() {
                       <span className="text-ink/55">{row.action.replace(/_/g, ' ')}</span>{' '}
                       {row.summary ? <span className="truncate">{row.summary}</span> : null}
                     </p>
-                    <p className="text-[10.5px] text-ink/40">{timeAgo(row.createdAt, locale)}</p>
+                    <p className="text-[10.5px] text-ink/40"><TimeAgo iso={row.createdAt} locale={locale} /></p>
                   </li>
                 ))}
               </ol>
@@ -724,7 +725,7 @@ export default function AdminDashboardPage() {
                       </span>
                       <span className="min-w-0 flex-1 leading-tight">
                         <span className="block truncate text-[12.5px] font-semibold text-ink/90">{u.name}</span>
-                        <span className="block truncate text-[10.5px] text-ink/45">{u.email} · {timeAgo(u.createdAt, locale)}</span>
+                        <span className="block truncate text-[10.5px] text-ink/45">{u.email} · <TimeAgo iso={u.createdAt} locale={locale} /></span>
                       </span>
                       <span className="inline-flex shrink-0 items-center gap-1.5">
                         <span className={`a-status-ok ${fresh ? '' : '!bg-slate-500 !shadow-none'}`} aria-hidden />

@@ -9,7 +9,7 @@ import { LOCALE_META, type Locale } from '@/lib/i18n/dictionaries';
 import { useAuth } from '@/hooks/useAuth';
 import { loadSaved, type SavedStory } from '@/lib/news/saved';
 import { LoadingSkeleton } from '@/components/ui/States';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 export default function AccountPage() {
   const { t, s, locale, setLocale } = useLocale();
@@ -62,7 +62,7 @@ export default function AccountPage() {
             {t(s.account.role)}: {user.role}
           </span>
           <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-white/60">
-            {t(s.account.memberSince)} {timeAgo(user.createdAt, locale)}
+            {t(s.account.memberSince)} <TimeAgo iso={user.createdAt} locale={locale} />
           </span>
         </div>
 
@@ -118,7 +118,7 @@ export default function AccountPage() {
                     {locale === 'rw' ? story.titleKiny : story.title}
                   </span>
                   <span className="mt-0.5 block text-xs text-white/40">
-                    {story.sourceName} • {timeAgo(story.publishedAt, locale)}
+                    {story.sourceName} • <TimeAgo iso={story.publishedAt} locale={locale} />
                   </span>
                 </Link>
               </li>

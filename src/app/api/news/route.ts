@@ -4,8 +4,8 @@ import { ok, err } from '@/lib/api/envelope';
 import type { NewsCategory } from '@/types/news';
 
 const CATEGORIES: Array<NewsCategory | 'all'> = [
-  'all', 'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
-  'uburezi', 'umuco', 'ibidukikije', 'amahanga', 'imvurugano',
+  'all', 'rwanda', 'amahanga', 'ubukungu', 'politiki', 'ikoranabuhanga', 'ubuzima',
+  'uburezi', 'imyidagaduro', 'imikino', 'umuco',
 ];
 const TIMES = ['24h', '7d', '30d', 'all'] as const;
 

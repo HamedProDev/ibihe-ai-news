@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { adminGet } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ChipGroup, Empty, ErrorNote, Loading, MeterRow, MiniBars, Panel, StatCard } from '@/components/admin-control/ui';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 interface Top {
   id: string;
@@ -145,7 +145,7 @@ export default function AdminAnalyticsPage() {
                         <td className="text-[12px] text-ink/60">{row.category}</td>
                         <td className="text-end text-[12px] text-brand-ink">{row.videos || '—'}</td>
                         <td className="text-end text-[12px] tabular-nums">{row.views.toLocaleString()}</td>
-                        <td className="text-end text-[11px] text-ink/45">{timeAgo(row.publishedAt, locale)}</td>
+                        <td className="text-end text-[11px] text-ink/45"><TimeAgo iso={row.publishedAt} locale={locale} /></td>
                       </tr>
                     ))}
                   </tbody>

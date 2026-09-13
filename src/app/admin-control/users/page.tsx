@@ -5,7 +5,7 @@ import { Plus, Search } from 'lucide-react';
 import { adminGet, adminSend } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { Empty, ErrorNote, Field, Loading, Panel, Toast, useToast } from '@/components/admin-control/ui';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 interface UserRow {
   id: string;
@@ -183,7 +183,7 @@ export default function AdminUsersPage() {
                       </select>
                     </td>
                     <td className="text-[12px] tabular-nums text-ink/60">{row.sessions}</td>
-                    <td className="text-[12px] text-ink/55">{row.lastLoginAt ? timeAgo(row.lastLoginAt, locale) : '—'}</td>
+                    <td className="text-[12px] text-ink/55">{row.lastLoginAt ? <TimeAgo iso={row.lastLoginAt} locale={locale} /> : '—'}</td>
                     <td>
                       <input
                         type="checkbox"

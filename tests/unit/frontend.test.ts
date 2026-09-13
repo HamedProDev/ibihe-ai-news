@@ -7,8 +7,8 @@ import type { NewsCategory } from '../../src/types/news.ts';
 describe('category-style', () => {
   it('returns a chip class for every category', () => {
     const cats: NewsCategory[] = [
-      'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
-      'uburezi', 'umuco', 'ibidukikije', 'amahanga', 'imvurugano',
+      'rwanda', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
+      'uburezi', 'umuco', 'amahanga', 'imyidagaduro',
     ];
     for (const c of cats) {
       assert.ok(categoryChip(c).includes('bg-'), c);

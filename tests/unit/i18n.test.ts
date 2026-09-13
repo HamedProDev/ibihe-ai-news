@@ -4,16 +4,14 @@ import { LOCALES, LOCALE_META, STRINGS, isLocale, tx, type LangEntry } from '../
 import { INTL_LOCALE, longDate, timeAgo } from '../../src/lib/i18n/timeago.ts';
 
 describe('dictionaries', () => {
-  it('exposes exactly six locales with metadata', () => {
-    assert.deepEqual([...LOCALES], ['rw', 'en', 'fr', 'sw', 'ar', 'ha']);
-    assert.equal(LOCALE_META.length, 6);
-    assert.equal(LOCALE_META.find((m) => m.code === 'ar')?.dir, 'rtl');
-    assert.ok(LOCALE_META.every((m) => m.dir === 'ltr' || m.code === 'ar'));
+  it('exposes exactly four locales with metadata', () => {
+    assert.deepEqual([...LOCALES], ['rw', 'en', 'fr', 'sw']);
+    assert.equal(LOCALE_META.length, 4);
   });
 
   it('isLocale accepts only known locales', () => {
     assert.equal(isLocale('rw'), true);
-    assert.equal(isLocale('ha'), true);
+    assert.equal(isLocale('sw'), true);
     assert.equal(isLocale('xx'), false);
     assert.equal(isLocale(undefined), false);
   });
@@ -22,13 +20,13 @@ describe('dictionaries', () => {
     const e = STRINGS.nav.home;
     assert.equal(tx('rw', e), e.rw);
     assert.equal(tx('fr', e), e.fr);
-    const partial = { rw: 'RW', en: 'EN', fr: '', sw: '', ar: '', ha: '' } as unknown as LangEntry;
+    const partial = { rw: 'RW', en: 'EN', fr: '', sw: '' } as unknown as LangEntry;
     assert.equal(tx('sw', partial), 'EN');
-    const rwOnly = { rw: 'RW', en: '', fr: '', sw: '', ar: '', ha: '' } as unknown as LangEntry;
-    assert.equal(tx('ar', rwOnly), 'RW');
+    const rwOnly = { rw: 'RW', en: '', fr: '', sw: '' } as unknown as LangEntry;
+    assert.equal(tx('fr', rwOnly), 'RW');
   });
 
-  it('every LangEntry has all six languages', () => {
+  it('every LangEntry has all four languages', () => {
     const missing: string[] = [];
     const walk = (obj: unknown, path: string) => {
       if (!obj || typeof obj !== 'object') return;

@@ -12,22 +12,22 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Ticker } from './Ticker';
 
 interface NavItem {
-  key: 'home' | 'africa' | 'world' | 'business' | 'politics' | 'technology' | 'health' | 'education' | 'sports' | 'culture' | 'environment';
+  key: 'home' | 'rwanda' | 'amahanga' | 'business' | 'politics' | 'technology' | 'health' | 'education' | 'entertainment' | 'sports' | 'culture';
   href: string;
 }
 
 const NAV: NavItem[] = [
   { key: 'home', href: '/' },
-  { key: 'africa', href: '/amakuru' },
-  { key: 'world', href: '/amakuru?category=amahanga' },
+  { key: 'rwanda', href: '/amakuru' },
+  { key: 'amahanga', href: '/amakuru?category=amahanga' },
   { key: 'business', href: '/amakuru?category=ubukungu' },
   { key: 'politics', href: '/amakuru?category=politiki' },
   { key: 'technology', href: '/amakuru?category=ikoranabuhanga' },
   { key: 'health', href: '/amakuru?category=ubuzima' },
   { key: 'education', href: '/amakuru?category=uburezi' },
+  { key: 'entertainment', href: '/amakuru?category=imyidagaduro' },
   { key: 'sports', href: '/amakuru?category=imikino' },
   { key: 'culture', href: '/amakuru?category=umuco' },
-  { key: 'environment', href: '/amakuru?category=ibidukikije' },
 ];
 
 function AccountButton() {

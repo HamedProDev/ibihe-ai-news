@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { adminGet, adminSend } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ChipGroup, Empty, ErrorNote, Field, Loading, Panel, Toast, useToast } from '@/components/admin-control/ui';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 interface TipRow {
   id: string;
@@ -106,7 +106,7 @@ export default function AdminTipsPage() {
                 <span className="font-semibold text-ink/80">{tip.name || (locale === 'rw' ? 'Ntizwi' : 'Anonymous')}</span>
                 {tip.contact && <span className="truncate" dir="ltr">{tip.contact}</span>}
                 <span aria-hidden>·</span>
-                <span>{timeAgo(tip.createdAt, locale)}</span>
+                <TimeAgo iso={tip.createdAt} locale={locale} />
                 <span className="x-chip !py-0">{tip.kind}</span>
               </div>
               <p className="whitespace-pre-line text-[14px] leading-relaxed text-ink/85">{tip.message}</p>

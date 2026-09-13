@@ -9,7 +9,7 @@ import { adminGet, adminSend } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { CATEGORY_SLUGS } from '@/lib/news/category-registry';
 import { Empty, ErrorNote, Field, Loading, Pager, Panel, StateDot, Toast, useToast } from '@/components/admin-control/ui';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 const PAGE_SIZE = 25;
 
@@ -280,7 +280,7 @@ export default function AdminArticlesPage() {
                             {locale === 'rw' ? a.titleKiny || a.title : a.title}
                           </Link>
                           <span className="block truncate text-[11px] text-ink/45">
-                            {a.sources?.[0]?.name ?? 'IbiheNews'} · {timeAgo(a.publishedAt, locale)}
+                            {a.sources?.[0]?.name ?? 'IbiheNews'} · <TimeAgo iso={a.publishedAt} locale={locale} />
                             {a.isMock ? ' · demo' : ''}
                             {a.authorName ? ` · ${a.authorName}` : ''}
                           </span>

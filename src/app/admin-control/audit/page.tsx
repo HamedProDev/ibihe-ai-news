@@ -6,6 +6,7 @@ import { adminGet } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ChipGroup, Empty, ErrorNote, Loading, Panel } from '@/components/admin-control/ui';
 import { longDate, timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 
 interface Entry {
   id?: number;
@@ -105,7 +106,7 @@ export default function AdminAuditPage() {
                       {row.summary ? ` — ${row.summary}` : ''}
                     </td>
                     <td className="text-end text-[11px] text-ink/50" title={longDate(row.createdAt, locale)}>
-                      {timeAgo(row.createdAt, locale)}
+                      <TimeAgo iso={row.createdAt} locale={locale} />
                     </td>
                   </tr>
                 ))}

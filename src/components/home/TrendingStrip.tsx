@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import type { Article } from '@/types';
 import { useLocale } from '@/components/i18n/LanguageProvider';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 import { categoryChip } from '@/lib/news/category-style';
 
 function readArticles(json: unknown): Article[] {
@@ -64,7 +64,7 @@ export function TrendingStrip() {
                   {locale === 'rw' ? a.titleKiny : a.title}
                 </span>
                 <span className="mt-1 block text-xs text-white/40">
-                  {timeAgo(a.publishedAt, locale)}
+                  <TimeAgo iso={a.publishedAt} locale={locale} />
                   {typeof a.views === 'number' && a.views > 0 && ` • ${a.views.toLocaleString()} ${t(s.trending.views)}`}
                 </span>
               </span>

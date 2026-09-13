@@ -11,8 +11,8 @@ import { STRINGS } from '@/lib/i18n/dictionaries';
 export const revalidate = 300;
 
 const CATEGORIES: Array<NewsCategory | 'all'> = [
-  'all', 'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
-  'uburezi', 'umuco', 'ibidukikije', 'amahanga', 'imvurugano',
+  'all', 'rwanda', 'amahanga', 'ubukungu', 'politiki', 'ikoranabuhanga', 'ubuzima',
+  'uburezi', 'imyidagaduro', 'imikino', 'umuco',
 ];
 
 export default async function AmakuruPage({

@@ -6,7 +6,7 @@ import { Ban, Check, EyeOff, Trash2 } from 'lucide-react';
 import { adminGet, adminSend } from '@/lib/client/admin-api';
 import { useLocale } from '@/components/i18n/LanguageProvider';
 import { ChipGroup, Empty, ErrorNote, Loading, Panel, Toast, useToast } from '@/components/admin-control/ui';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 import type { Comment } from '@/types/comments';
 
 type Filter = 'pending' | 'approved' | 'hidden' | 'spam' | 'all';
@@ -94,7 +94,7 @@ export default function AdminCommentsPage() {
                 <span className="font-semibold text-ink/80">{c.authorName || '—'}</span>
                 {c.authorEmail && <span className="truncate">{c.authorEmail}</span>}
                 <span aria-hidden>·</span>
-                <span>{timeAgo(c.createdAt, locale)}</span>
+                <TimeAgo iso={c.createdAt} locale={locale} />
                 {c.language && <span className="x-chip !py-0 !text-[10px]">{c.language.toUpperCase()}</span>}
                 <Link href={`/admin-control/articles/${encodeURIComponent(c.articleId)}`} className="ms-auto truncate text-brand-ink hover:underline">
                   {t(A.onStory)} →

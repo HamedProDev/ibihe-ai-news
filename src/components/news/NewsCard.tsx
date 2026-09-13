@@ -6,7 +6,7 @@ import type { Article, NewsArticle } from '@/types';
 import { ArticleImage } from '@/components/news/ArticleImage';
 import { SaveButton } from '@/components/news/SaveButton';
 import { useLocale } from '@/components/i18n/LanguageProvider';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 import { categoryChip } from '@/lib/news/category-style';
 import type { SavedStory } from '@/lib/news/saved';
 
@@ -71,7 +71,7 @@ function Byline({ article }: { article: CardArticle }) {
       {author && <span aria-hidden>•</span>}
       <span className="inline-flex items-center gap-1 shrink-0">
         <Clock size={11} aria-hidden />
-        {timeAgo(article.publishedAt, locale)}
+        <TimeAgo iso={article.publishedAt} locale={locale} />
       </span>
       {typeof views === 'number' && views > 0 && (
         <span className="inline-flex items-center gap-1 shrink-0">
@@ -100,7 +100,7 @@ export default function NewsCard({
   const href = `/amakuru/${article.id}`;
   const image = imageOf(article);
   const catLabel = t(s.categories[article.category]);
-  const live = article.category === 'imvurugano';
+  const live = article.category === 'rwanda';
 
   if (variant === 'overlay') {
     return (
@@ -122,7 +122,7 @@ export default function NewsCard({
               <p className="mt-1.5 hidden text-sm leading-relaxed text-white/70 sm:block line-clamp-2">{excerpt}</p>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <span className="text-xs text-white/60">{sourceNameOf(article)}</span>
-                <span className="text-xs text-white/60">{timeAgo(article.publishedAt, locale)}</span>
+                <span className="text-xs text-white/60"><TimeAgo iso={article.publishedAt} locale={locale} /></span>
               </div>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function NewsCard({
             {title}
           </h4>
           <p className="mt-0.5 text-xs text-white/40">
-            {sourceNameOf(article)} • {timeAgo(article.publishedAt, locale)}
+            {sourceNameOf(article)} • <TimeAgo iso={article.publishedAt} locale={locale} />
           </p>
         </article>
       </Link>
@@ -198,4 +198,4 @@ export default function NewsCard({
   );
 }
 
-export { VideoBadge };
+

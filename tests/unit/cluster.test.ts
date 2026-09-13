@@ -9,7 +9,7 @@ function article(partial: Partial<Article> & { id: string }): Article {
     titleKiny: partial.titleKiny ?? 'Umutwe',
     excerpt: '',
     excerptKiny: '',
-    category: partial.category ?? 'ubuhinzi',
+    category: partial.category ?? 'rwanda',
     status: 'developing',
     sources: [],
     publishedAt: partial.publishedAt ?? '2026-09-10T10:00:00.000Z',

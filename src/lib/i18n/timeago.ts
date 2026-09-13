@@ -6,8 +6,6 @@ export const INTL_LOCALE: Record<Locale, string> = {
   en: 'en',
   fr: 'fr',
   sw: 'sw',
-  ar: 'ar',
-  ha: 'ha',
 };
 
 /**

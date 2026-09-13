@@ -6,8 +6,8 @@ import type { Article, NewsCategory } from '@/types/news';
 import type { ContentStatus } from '@/types/provenance';
 
 const CATEGORIES: NewsCategory[] = [
-  'ubuhinzi', 'politiki', 'ubukungu', 'ikoranabuhanga',
-  'ubuzima', 'imikino', 'amahanga', 'imvurugano',
+  'rwanda', 'politiki', 'ubukungu', 'ikoranabuhanga',
+  'ubuzima', 'imikino', 'amahanga', 'uburezi', 'imyidagaduro', 'umuco',
 ];
 const STATUSES: ContentStatus[] = ['verified', 'developing', 'multi-source', 'analysis', 'forecast', 'opinion'];
 

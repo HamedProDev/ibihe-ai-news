@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import { useLocale } from '@/components/i18n/LanguageProvider';
-import { timeAgo } from '@/lib/i18n/timeago';
+import { TimeAgo } from '@/lib/i18n/TimeAgo';
 import type { Comment } from '@/types/comments';
 
 interface ListPayload {
@@ -104,7 +104,7 @@ export function Comments({ articleId, enabled = true }: { articleId: string; ena
               <div className="flex flex-wrap items-center gap-2 text-[12px] text-ink/45">
                 <span className="font-semibold text-ink/80">{c.authorName || '匿名'}</span>
                 <span aria-hidden>·</span>
-                <span>{timeAgo(c.createdAt, locale)}</span>
+                <span><TimeAgo iso={c.createdAt} locale={locale} /></span>
                 {c.language && c.language !== locale && <span className="x-chip !py-0 !text-[10px]">{c.language.toUpperCase()}</span>}
               </div>
               <p className="mt-1.5 whitespace-pre-line text-[14px] leading-relaxed text-ink/85">{c.body}</p>

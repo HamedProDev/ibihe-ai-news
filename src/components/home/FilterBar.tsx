@@ -13,8 +13,8 @@ export interface NewsFilters {
 export const DEFAULT_FILTERS: NewsFilters = { time: 'all', country: 'all', category: 'all' };
 
 const CATEGORIES: Array<NewsCategory | 'all'> = [
-  'all', 'politiki', 'ubukungu', 'ikoranabuhanga', 'ubuzima', 'imikino',
-  'uburezi', 'umuco', 'ibidukikije', 'ubuhinzi', 'amahanga', 'imvurugano',
+  'all', 'rwanda', 'amahanga', 'ubukungu', 'politiki', 'ikoranabuhanga', 'ubuzima',
+  'uburezi', 'imyidagaduro', 'imikino', 'umuco',
 ];
 
 const COUNTRIES = ['all', 'RW', 'KE', 'UG', 'TZ', 'BI', 'CD'] as const;

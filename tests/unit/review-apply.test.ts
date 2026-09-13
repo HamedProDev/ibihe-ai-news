@@ -11,7 +11,7 @@ function article(): Article {
     titleKiny: 'Title',
     excerpt: 'Excerpt',
     excerptKiny: 'Excerpt',
-    category: 'ubuhinzi',
+    category: 'rwanda',
     status: 'developing',
     sources: [],
     publishedAt: '2026-09-10T10:00:00.000Z',

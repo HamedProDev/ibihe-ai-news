@@ -14,7 +14,7 @@ function article(partial: Partial<Article> & { id: string }): Article {
     titleKiny: 'U',
     excerpt: 'E',
     excerptKiny: 'I',
-    category: 'ubuhinzi',
+    category: 'rwanda',
     status: 'developing',
     sources: [],
     publishedAt: new Date().toISOString(),
@@ -48,7 +48,7 @@ describe('summarize (extractive)', () => {
 
 describe('classifyCategory', () => {
   it('routes commodity and institution keywords', () => {
-    assert.equal(classifyCategory('Umusaruro w’ibirayi', ''), 'ubuhinzi');
+    assert.equal(classifyCategory('Umusaruro w’ibirayi', ''), 'ubukungu');
     assert.equal(classifyCategory('BNR yatangaje igipimo', ''), 'ubukungu');
     assert.equal(classifyCategory('MTN 5G', ''), 'ikoranabuhanga');
     assert.equal(classifyCategory('Something totally unrelated here qzxw', 'nothing relevant at all qzxw'), 'amahanga');
