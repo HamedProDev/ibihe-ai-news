@@ -51,7 +51,7 @@ export function buildWhyItMatters(article: Article): WhyItMatters[] {
     `This story affects you because it describes what is happening${districts.length > 0 ? ` in ${districts.slice(0, 3).join(', ')}` : ''}. Understanding it helps you make better everyday decisions.`,
   );
 
-  if (article.category === 'ubuhinzi' || commodities.length > 0) {
+  if (commodities.length > 0) {
     push(
       'farmers',
       what
@@ -61,7 +61,7 @@ export function buildWhyItMatters(article: Article): WhyItMatters[] {
     );
   }
 
-  if (article.category === 'ubukungu' || article.category === 'ubuhinzi') {
+  if (article.category === 'ubukungu') {
     push(
       'businesses',
       `Ku bucuruzi, amakuru nk’aya ashobora guhindura ibiciro n’ibisabwa ku isoko${where}. Teganya hakiri kare: genzura ibarura ryawe n’amasezerano y’uguhaha.`,

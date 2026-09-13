@@ -45,3 +45,17 @@ export async function saveBriefingRepo(day: string, data: Record<string, unknown
   for (const d of days.slice(0, Math.max(0, days.length - 90))) delete all[d];
   await writeStore(STORE, all);
 }
+
+/** Day keys that already have a stored briefing (newest first). */
+export async function listBriefingDaysRepo(limit = 30): Promise<string[]> {
+  if (isPostgresEnabled()) {
+    try {
+      const r = await pgQuery<{ day: string }>('SELECT day FROM briefings ORDER BY day DESC LIMIT $1', [limit]);
+      return r.rows.map((x) => x.day);
+    } catch (err) {
+      console.error('[db] briefings pg days failed, falling back to json:', err instanceof Error ? err.message : err);
+    }
+  }
+  const all = (await readStore<Record<string, Record<string, unknown>>>(STORE))?.value ?? {};
+  return Object.keys(all).sort().reverse().slice(0, limit);
+}

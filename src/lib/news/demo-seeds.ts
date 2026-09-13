@@ -23,7 +23,8 @@ export const DEMO_ARTICLES: Article[] = [
       'Ibihe keeps the original local unit (sack, basket, bunch) and also shows a normalized RWF/kg price so markets can be compared fairly.',
     excerptKiny:
       'Ibihe igumana ingero y’aho (umufuka, agatebo, umutumba) kandi ikerekana n’igiciro ngenderwaho cya RWF/kg kugira ngo amasoko agereranywe neza.',
-    category: 'ubuhinzi',
+    category: 'ubukungu',
+    district: 'Gasabo',
     status: 'analysis',
     sources: [{ name: 'Ibihe', url: 'https://ibihe.rw/ibisobanuro', fetchedAt: h(5) }],
     publishedAt: h(5),
@@ -51,7 +52,8 @@ export const DEMO_ARTICLES: Article[] = [
       'Every Ibihe forecast shows its probability, confidence, evidence, assumptions and what could prove it wrong. Forecasts start with agriculture only.',
     excerptKiny:
       'Buri ihanura rya Ibihe ryerekana amahirwe, icyizere, ibimenyetso, ibyizerwa n’ibishobora kuryoshya. Ihanura ritangirana n’ubuhinzi gusa.',
-    category: 'ubuhinzi',
+    category: 'rwanda',
+    district: 'Kigali',
     status: 'analysis',
     sources: [{ name: 'Ibihe', url: 'https://ibihe.rw/ibimenyetso', fetchedAt: h(9) }],
     publishedAt: h(9),
@@ -78,7 +80,8 @@ export const DEMO_ARTICLES: Article[] = [
       'Rwanda’s two rainy seasons shape planting decisions. Ibihe connects district forecasts to crop implications — and always states the uncertainty.',
     excerptKiny:
       'Ibihe bibiri by’imvura mu Rwanda bigena ibyemezo by’ihinga. Ibihe ihuza iteganyagihe rya buri karere n’ingaruka ku bihingwa — kandi buri gihe ivuga kutamenya kubirimo.',
-    category: 'ubuhinzi',
+    category: 'rwanda',
+    district: 'Kayonza',
     status: 'analysis',
     sources: [{ name: 'Ibihe', url: 'https://ibihe.rw/ikirere', fetchedAt: h(14) }],
     publishedAt: h(14),

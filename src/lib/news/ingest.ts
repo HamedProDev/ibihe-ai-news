@@ -31,8 +31,9 @@ export interface IngestMeta {
 export function classifyCategory(title: string, excerpt: string): NewsCategory {
   const t = `${title} ${excerpt}`.toLowerCase();
   const has = (...words: string[]): boolean => words.some((w) => t.includes(w));
-  // Breaking takes precedence (explicit markers only — never guess).
-  if (has('breaking', 'just in', 'amakuru agezweho', 'birihutirwa', 'live:')) return 'imvurugano';
+  // Breaking is a flag (set in normalizeItem), not a section — it lands in
+  // the Rwanda feed. Explicit markers only, never guess.
+  if (has('breaking', 'just in', 'amakuru agezweho', 'birihutirwa', 'live:')) return 'rwanda';
   if (
     has(
       'ibirayi', 'ibishyimbo', 'ibigori', 'inyanya', 'igitoki', 'umuceri', 'imyumbati',
@@ -44,7 +45,28 @@ export function classifyCategory(title: string, excerpt: string): NewsCategory {
       'food security', 'ibiribwa', 'nutrition', 'imirire',
     )
   )
-    return 'ubuhinzi';
+    return 'ubukungu';
+  if (
+    has(
+      'uburezi', 'amashuri', 'ishuri', 'school', 'university', 'kaminuza', 'REB',
+      'ibizamini', 'exam', 'scholarship', 'buruse', 'umwarimu', 'teacher', 'student', 'abanyeshuri',
+    )
+  )
+    return 'uburezi';
+  if (
+    has(
+      'imyidagaduro', 'entertainment', 'concert', 'film', 'cinema', 'umuziki',
+      'music', 'celebrity', 'igitecyerezo', 'talent', 'show', 'series', 'album',
+    )
+  )
+    return 'imyidagaduro';
+  if (
+    has(
+      'umuco', 'culture', 'art', 'museum', 'ubugeni', ' Kwita Izina', 'festival',
+      'heritage', 'umuganda', 'ingando', 'traditional', 'ibitaramo',
+    )
+  )
+    return 'umuco';
   if (
     has(
       'bnr', 'ifaranga', 'rwf', 'frw', 'exchange', 'inflation', 'gdp', 'ubukungu',
@@ -106,6 +128,9 @@ export function normalizeItem(item: RawFeedItem, fetchedAt: string): Article | n
   const id = `a-${contentHash(item.sourceUrl + item.title, dayBucket(publishedAt))}`;
   const entities = extractEntities(item.title, item.excerpt);
   const category = classifyCategory(item.title, item.excerpt);
+  const breaking = /\b(breaking|just in|birihutirwa)\b|amakuru agezweho|live:/i.test(
+    `${item.title} ${item.excerpt}`,
+  );
   const isKiny = item.language === 'rw';
   const keyPoints = extractKeyPoints(`${item.title}. ${item.excerpt}`.trim(), 4);
   const src = findSource(item.sourceName);
@@ -138,6 +163,7 @@ export function normalizeItem(item: RawFeedItem, fetchedAt: string): Article | n
       .map((e) => e.normalized.toLowerCase())
       .slice(0, 6),
     views: 0,
+    ...(breaking ? { breaking: true } : {}),
     isMock: false,
   };
 }

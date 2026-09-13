@@ -8,7 +8,8 @@
  */
 import type { DataMode } from '../../types/provenance';
 import type { Article, NewsCategory, StoryCluster } from '../../types/news';
-import { listArticlesRepo, getArticleRepo } from '../db/repos/articles.ts';
+import { isPubliclyListed, listArticlesRepo, getArticleRepo } from '../db/repos/articles.ts';
+import { canonicalCategory, CATEGORY_SLUGS } from './category-registry.ts';
 import { clusterArticles, relatedArticles } from './cluster.ts';
 import { DEMO_ARTICLES } from './demo-seeds.ts';
 import { readIngestMeta, runIngestion, type IngestMeta } from './ingest.ts';
@@ -26,7 +27,17 @@ export interface ArticleQuery {
   /** ISO country code (e.g. 'RW'); 'all' disables. */
   country?: string;
   /** 'newest' (default) or 'views' for trending. */
-  sort?: 'newest' | 'views';
+  sort?: 'newest' | 'views' | 'oldest';
+  /** Editorial flags (homepage hero, breaking rail, video hub). */
+  featured?: boolean;
+  breaking?: boolean;
+  hasVideo?: boolean;
+  /** Single tag (lowercase, no '#'). */
+  tag?: string;
+  status?: string;
+  authorId?: string;
+  /** Title/excerpt substring search (light; /api/search is the indexer). */
+  q?: string;
 }
 
 const TIME_WINDOW_MS: Record<Exclude<TimeFilter, 'all'>, number> = {
@@ -82,6 +93,14 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
   const stored = (await listArticlesRepo({ limit: 500 })).items;
 
   let articles = stored;
+  // Legacy feed slugs (ubuhinzi, ibidukikije, imvurugano…) land on their
+  // Rwanda-first successors so old rows render + filter correctly even
+  // before migration 005 runs against them.
+  articles = articles.map((a) =>
+    (a.category as string) && !(CATEGORY_SLUGS as string[]).includes(a.category)
+      ? { ...a, category: canonicalCategory(a.category) }
+      : a,
+  );
   let dataMode: DataMode = 'live';
   if (articles.length === 0) {
     articles = DEMO_ARTICLES;
@@ -91,7 +110,24 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
   }
 
   const { time = 'all', country = 'all', sort = 'newest' } = query;
+  // Drafts, archived and unlisted stories never appear publicly; scheduled
+  // ones appear as soon as their publish time arrives.
+  const now = Date.now();
+  articles = articles.filter((a) => (articles === DEMO_ARTICLES ? true : isPubliclyListed(a, now)));
+
   let filtered = category === 'all' ? articles : articles.filter((a) => a.category === category);
+  if (query.featured !== undefined) filtered = filtered.filter((a) => Boolean(a.featured) === query.featured);
+  if (query.breaking !== undefined) filtered = filtered.filter((a) => Boolean(a.breaking) === query.breaking);
+  if (query.hasVideo !== undefined) {
+    filtered = filtered.filter((a) => ((a.videos?.length ?? 0) > 0) === query.hasVideo);
+  }
+  if (query.tag) filtered = filtered.filter((a) => (a.tags ?? []).includes(query.tag!));
+  if (query.status) filtered = filtered.filter((a) => a.status === query.status);
+  if (query.authorId) filtered = filtered.filter((a) => a.authorId === query.authorId);
+  if (query.q) {
+    const needle = query.q.toLowerCase();
+    filtered = filtered.filter((a) => `${a.title} ${a.titleKiny} ${a.excerpt}`.toLowerCase().includes(needle));
+  }
   if (time !== 'all') {
     const cutoff = Date.now() - TIME_WINDOW_MS[time];
     filtered = filtered.filter((a) => {
@@ -106,6 +142,13 @@ export async function listArticles(query: ArticleQuery = {}): Promise<ArticleLis
   if (sort === 'views') {
     filtered = [...filtered].sort(
       (a, b) => (b.views ?? 0) - (a.views ?? 0) || +new Date(b.publishedAt) - +new Date(a.publishedAt),
+    );
+  } else if (sort === 'oldest') {
+    filtered = [...filtered].sort((a, b) => +new Date(a.publishedAt) - +new Date(b.publishedAt));
+  } else {
+    // Breaking + pinned stories lead the newest-first feed.
+    filtered = [...filtered].sort(
+      (a, b) => Number(Boolean(b.breaking)) - Number(Boolean(a.breaking)) || +new Date(b.publishedAt) - +new Date(a.publishedAt),
     );
   }
   const clusters = clusterArticles(articles);
@@ -134,7 +177,13 @@ export async function getArticle(id: string): Promise<{
   // (covers demo seeds when no live rows exist yet).
   const direct = await getArticleRepo(id).catch(() => null);
   const { articles, clusters, dataMode } = await listArticles({ limit: 500 });
-  const article = direct ?? articles.find((a) => a.id === id) ?? null;
+  // Demo seeds stay readable even once live rows exist, so a shared dev
+  // database never turns the documented sample stories into 404s.
+  const seed = DEMO_ARTICLES.find((a) => a.id === id) ?? null;
+  const found = direct ?? articles.find((a) => a.id === id) ?? seed;
+  const article = found && !(CATEGORY_SLUGS as string[]).includes(found.category)
+    ? { ...found, category: canonicalCategory(found.category) }
+    : found;
   if (!article) return { article: null, related: [], cluster: null, dataMode };
   const cluster = clusters.find((c) => c.articleIds.includes(id)) ?? null;
   const related = relatedArticles(article, articles, 4);

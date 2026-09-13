@@ -119,7 +119,7 @@ export function toLegacyPrediction(f: Forecast): Prediction {
     id: f.id,
     topic: f.questionEn,
     topicKiny: f.questionKiny,
-    category: 'ubuhinzi',
+    category: 'rwanda',
     direction:
       f.direction === 'up' ? 'up' : f.direction === 'down' ? 'down' : 'neutral',
     summary: f.evidenceEn[0] ?? f.questionEn,

@@ -27,6 +27,16 @@ export interface SourceRef {
   fetchedAt: string;
   /** Language of the original document. */
   language?: 'rw' | 'en' | 'fr' | 'sw' | string;
+  /** How much weight the newsroom gives this source. */
+  authority?: 'primary' | 'official' | 'wire' | 'outlet' | 'aggregator' | 'social';
+  /** 0..1 editorial trust score (1 = we would publish on it alone). */
+  credibility?: number;
+  /** Wayback / archive copy, so the claim stays checkable if the page dies. */
+  archivedUrl?: string;
+  /** Page quote or paragraph the claim came from. */
+  quote?: string;
+  /** Who added this source to the story. */
+  addedBy?: string;
 }
 
 /** Provenance for AI-generated content. */
