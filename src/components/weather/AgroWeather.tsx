@@ -1,0 +1,129 @@
+'use client';
+
+import { CloudRain, Droplets, Eye, Sparkles, Telescope, TriangleAlert, Wind } from 'lucide-react';
+import type { AgroAdvisory, DistrictWeather } from '@/types/weather';
+import { AIBadge } from '@/components/ui/Badges';
+import { useLocale } from '@/components/i18n/LanguageProvider';
+
+export function AgroWeather({ weather, advisory }: { weather: DistrictWeather; advisory: AgroAdvisory | null }) {
+  const { t, s, locale } = useLocale();
+
+  if (!weather.available && weather.forecast.length === 0) {
+    return (
+      <div className="bg-ink/[0.03] border border-ink/10 rounded-2xl p-6 text-center">
+        <CloudRain size={22} className="text-ink/30 mx-auto mb-2" aria-hidden="true" />
+        <p className="text-ink/60 text-sm">{t(s.data.unavailable)}</p>
+        <p className="text-ink/35 text-xs mt-1">Open-Meteo</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Observation — measured, not predicted */}
+      {weather.observation && (
+        <section aria-labelledby="wx-obs" className="bg-info/10 border border-blue-500/20 rounded-2xl p-4">
+          <h3 id="wx-obs" className="flex items-center gap-2 text-ink/70 text-xs font-semibold uppercase tracking-widest mb-3">
+            <Eye size={13} aria-hidden="true" />
+            {t(s.weather.observation)}
+            <span className="ml-auto font-normal normal-case tracking-normal text-ink/35">
+              {weather.observation.source}
+            </span>
+          </h3>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-ink text-4xl font-bold">{Math.round(weather.observation.tempC ?? 0)}°</p>
+              <p className="text-ink/50 text-sm">{weather.district}</p>
+            </div>
+            <div className="flex gap-4 text-[13px] text-ink/60">
+              <span className="flex items-center gap-1.5">
+                <Droplets size={14} aria-hidden="true" />{weather.observation.humidityPct ?? '—'}%
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Wind size={14} aria-hidden="true" />{weather.observation.windKph ?? '—'} km/h
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Forecast — estimate with uncertainty */}
+      <section aria-labelledby="wx-fc" className="bg-info/10 border border-blue-500/20 rounded-2xl p-4">
+        <h3 id="wx-fc" className="flex items-center gap-2 text-ink/70 text-xs font-semibold uppercase tracking-widest mb-3">
+          <Telescope size={13} aria-hidden="true" />
+          {t(s.weather.forecast)}
+          {!weather.available && (
+            <span className="ml-auto text-warn/80 text-[11px] normal-case tracking-normal">
+              {t(s.data.stale)}
+            </span>
+          )}
+        </h3>
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+          {weather.forecast.map((d) => {
+            const wet = (d.precipitationProbability ?? 0) >= 50;
+            return (
+              <div key={d.date} className="bg-ink/5 rounded-xl p-2 text-center">
+                <p className="text-ink/45 text-[11px] mb-1">
+                  {new Date(d.date + 'T12:00:00').toLocaleDateString(locale === 'rw' ? 'rw-RW' : 'en-GB', { weekday: 'short' })}
+                </p>
+                <CloudRain size={16} className={`mx-auto ${wet ? 'text-info' : 'text-ink/25'}`} aria-hidden="true" />
+                <p className="text-ink text-xs font-semibold mt-1">{Math.round(d.tempMaxC ?? 0)}°</p>
+                <p className="text-ink/35 text-[11px]">{Math.round(d.tempMinC ?? 0)}°</p>
+                <p className={`text-[11px] font-medium mt-0.5 ${wet ? 'text-info' : 'text-ink/35'}`}>
+                  {d.precipitationProbability ?? '—'}%
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-ink/35 text-[11px] mt-2">
+          {locale === 'rw'
+            ? 'Ijanisha ry’imvura ni ugereranya — si ukuri kwizewe.'
+            : 'Rain probabilities are estimates — never certainties.'}
+        </p>
+      </section>
+
+      {/* AI interpretation — clearly labeled */}
+      {advisory && (
+        <section aria-labelledby="wx-ai" className="bg-brand/10 border border-brand/20 rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h3 id="wx-ai" className="flex items-center gap-2 text-ink/70 text-xs font-semibold uppercase tracking-widest">
+              <Sparkles size={13} className="text-brand-ink" aria-hidden="true" />
+              {t(s.weather.aiReading)}
+            </h3>
+            <AIBadge ai={advisory.ai} size="xs" />
+          </div>
+          <p className="text-ink/80 text-sm leading-relaxed mb-3">
+            {locale === 'rw' ? advisory.rainfallOutlookKiny : advisory.rainfallOutlookEn}
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <h4 className="text-ink/50 text-xs font-semibold mb-1.5">
+                {t(s.weather.implications)}
+              </h4>
+              <ul className="space-y-1.5">
+                {(locale === 'rw' ? advisory.implicationsKiny : advisory.implicationsEn).map((t, i) => (
+                  <li key={i} className="text-ink/75 text-[13px] leading-relaxed">• {t}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-ink/50 text-xs font-semibold mb-1.5">
+                {t(s.weather.advice)}
+              </h4>
+              <ul className="space-y-1.5">
+                {(locale === 'rw' ? advisory.recommendationsKiny : advisory.recommendationsEn).map((t, i) => (
+                  <li key={i} className="text-ink/75 text-[13px] leading-relaxed">• {t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="flex items-start gap-1.5 text-warn/70 text-xs leading-relaxed bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5">
+            <TriangleAlert size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
+            {locale === 'rw' ? advisory.uncertaintyKiny : advisory.uncertaintyEn}
+          </p>
+        </section>
+      )}
+    </div>
+  );
+}

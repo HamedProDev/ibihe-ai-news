@@ -1,0 +1,152 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { Bot, Send, Trash2 } from 'lucide-react';
+import { useAsk } from '@/hooks/useAsk';
+import { AIBadge } from '@/components/ui/Badges';
+import { ErrorState } from '@/components/ui/States';
+import { useLocale } from '@/components/i18n/LanguageProvider';
+
+function renderLite(text: string): React.ReactNode[] {
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('•')) {
+      return (
+        <li key={i} className="ml-4 list-disc">
+          {trimmed.slice(1).trim()}
+        </li>
+      );
+    }
+    if (trimmed === '') return <span key={i} className="block h-2" />;
+    return <p key={i}>{trimmed}</p>;
+  });
+}
+
+export function AskIbihe({ compact = false }: { compact?: boolean }) {
+  const { t, s, locale } = useLocale();
+  const { messages, loading, error, ask, clear } = useAsk();
+  const [value, setValue] = useState('');
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const examples = s.ask.examples[locale] ?? s.ask.examples.en;
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages.length, loading]);
+
+  return (
+    <section
+      aria-labelledby="ask-h"
+      className={`bg-brand/10 border border-brand/20 rounded-2xl ${compact ? 'p-4' : 'p-4 sm:p-5'}`}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-7 h-7 bg-brand/20 rounded-lg flex items-center justify-center">
+          <Bot size={14} className="text-brand-ink" aria-hidden="true" />
+        </div>
+        <h2 id="ask-h" className="text-ink text-[15px] font-bold">
+          {t(s.nav.ask)}
+        </h2>
+        {messages.length > 0 && (
+          <button
+            onClick={clear}
+            className="ml-auto text-ink/40 hover:text-ink p-1.5"
+            aria-label={locale === 'rw' ? 'Siba' : 'Clear'}
+          >
+            <Trash2 size={14} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      {messages.length === 0 && !loading && (
+        <div className="my-3 space-y-1.5">
+          {examples.map((ex) => (
+            <button
+              key={ex}
+              onClick={() => ask(ex)}
+              className="block w-full text-left text-[13px] text-ink/65 bg-ink/5 hover:bg-ink/10 border border-ink/10 rounded-lg px-3 py-2 transition-colors"
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {messages.length > 0 && (
+        <div className={`space-y-3 my-3 ${compact ? 'max-h-72' : 'max-h-[420px]'} overflow-y-auto pr-1`} aria-live="polite">
+          {messages.map((m, i) =>
+            m.role === 'user' ? (
+              <p key={i} className="ml-auto max-w-[85%] bg-brand/15 border border-brand/25 text-ink text-sm rounded-xl rounded-br-sm px-3 py-2">
+                {m.text}
+              </p>
+            ) : (
+              <div key={i} className="max-w-[95%] bg-ink/5 border border-ink/10 text-ink/85 text-sm rounded-xl rounded-bl-sm px-3 py-2.5 space-y-1.5">
+                <div className="space-y-1 leading-relaxed">{renderLite(m.text)}</div>
+                {m.answer && m.answer.citations.length > 0 && (
+                  <div className="pt-1.5 border-t border-ink/10">
+                    <p className="text-ink/40 text-[11px] mb-1">
+                      {t(s.ask.sources)}:
+                    </p>
+                    <ul className="space-y-0.5">
+                      {m.answer.citations.map((c) => (
+                        <li key={c.refId} className="text-[12px] text-brand-ink">
+                          [{c.kind}] {locale === 'rw' ? c.labelKiny : c.labelEn}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {m.answer && (
+                  <div className="pt-1">
+                    <AIBadge ai={m.answer.ai} size="xs" />
+                  </div>
+                )}
+              </div>
+            ),
+          )}
+          <div ref={bottomRef} />
+        </div>
+      )}
+
+      {loading && (
+        <p className="text-ink/45 text-[13px] my-2 animate-pulse" role="status">
+          {t(s.ask.thinking)}
+        </p>
+      )}
+      {error && (
+        <div className="my-2">
+          <ErrorState error={error} />
+        </div>
+      )}
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (value.trim()) {
+            ask(value);
+            setValue('');
+          }
+        }}
+        className="flex gap-2 mt-2"
+      >
+        <label htmlFor="ask-input" className="sr-only">
+          {t(s.ask.placeholder)}
+        </label>
+        <input
+          id="ask-input"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={t(s.ask.placeholder)}
+          disabled={loading}
+          className="flex-1 bg-ink/5 border border-ink/15 rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:border-brand/60 disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={loading || !value.trim()}
+          className="shrink-0 bg-brand hover:bg-brand-bright disabled:opacity-40 text-on-brand font-semibold text-sm rounded-xl px-3.5 py-2.5 inline-flex items-center gap-1.5 transition-colors"
+        >
+          <Send size={14} aria-hidden="true" />
+          <span className="hidden sm:inline">{t(s.ask.send)}</span>
+        </button>
+      </form>
+    </section>
+  );
+}
