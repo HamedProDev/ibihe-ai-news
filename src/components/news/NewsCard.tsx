@@ -197,3 +197,5 @@ export default function NewsCard({
     </Link>
   );
 }
+
+export { VideoBadge };

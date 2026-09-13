@@ -35,6 +35,8 @@ export default async function HomePage() {
       <div className="mt-8">
         <TrendingStrip />
       </div>
+
+      {settings.home.showTrending && <TrendingStrip />}
     </main>
   );
 }

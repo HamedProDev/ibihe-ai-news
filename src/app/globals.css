@@ -1,45 +1,640 @@
 @import "tailwindcss";
 
-:root {
-  --font-sora: 'Sora', sans-serif;
+/* =====================================================================
+ * IbiheNews design tokens
+ * ---------------------------------------------------------------------
+ * ONE source of truth for color. Dark is the default; light theme is a
+ * pure variable override (html[data-theme="light"]) — no class remapping,
+ * no !important hacks, and Tailwind utilities (text-ink/60, bg-surface…)
+ * resolve per theme because they reference these CSS variables.
+ *
+ * Rules for contributors:
+ *   • Surfaces:  bg-canvas / bg-canvas-2 / bg-surface / bg-surface-2
+ *   • Text:      text-ink (strong) → text-ink/70 → text-ink/45 (faint)
+ *   • Lines:     border-line / border-line-2 / border-line-3
+ *   • Fills:     bg-fill (subtle), bg-fill-2 (hover), bg-fill-3 (active)
+ *   • Brand:     bg-brand + text-on-brand, link/accent text-brand-ink
+ *   • On photos: text-on-image (always white — never theme-swapped)
+ * ===================================================================== */
+
+@theme {
+  --color-canvas: #0a0a0a;
+  --color-canvas-2: #0d0d0d;
+  --color-surface: #111111;
+  --color-surface-2: #161616;
+  --color-surface-3: #1f1f1f;
+
+  --color-ink: #ffffff;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-2: rgba(255, 255, 255, 0.18);
+  --color-line-3: rgba(255, 255, 255, 0.32);
+  --color-fill: rgba(255, 255, 255, 0.05);
+  --color-fill-2: rgba(255, 255, 255, 0.09);
+  --color-fill-3: rgba(255, 255, 255, 0.14);
+
+  --color-brand: #00c853;
+  --color-brand-bright: #00e65f;
+  --color-brand-ink: #00c853;
+  --color-on-brand: #05170c;
+  --color-on-image: #ffffff;
+
+  --color-danger: #f87171;
+  --color-warn: #fcd34d;
+  --color-info: #7dd3fc;
+  --color-ok: #6ee7b7;
+  --color-accent: #c4b5fd;
+  --color-alert: #fdba74;
+
+  --color-scrim: rgba(4, 6, 5, 0.72);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 18px 50px rgba(0, 0, 0, 0.45);
+
+  --radius-card: 1rem;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Noto Sans", sans-serif;
 }
 
+/* ---------- Light theme: only variables change ---------- */
+html[data-theme="light"] {
+  --color-canvas: #f5f5f2;
+  --color-canvas-2: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f1ed;
+  --color-surface-3: #e8e7e1;
+
+  --color-ink: #15171c;
+  --color-line: rgba(21, 23, 28, 0.12);
+  --color-line-2: rgba(21, 23, 28, 0.2);
+  --color-line-3: rgba(21, 23, 28, 0.34);
+  --color-fill: rgba(21, 23, 28, 0.045);
+  --color-fill-2: rgba(21, 23, 28, 0.075);
+  --color-fill-3: rgba(21, 23, 28, 0.12);
+
+  --color-brand-ink: #0a7a35;
+  --color-on-brand: #ffffff;
+  --color-scrim: rgba(20, 24, 22, 0.55);
+  --shadow-card: 0 1px 2px rgba(16, 24, 20, 0.06), 0 10px 26px rgba(16, 24, 20, 0.08);
+  --shadow-pop: 0 16px 44px rgba(16, 24, 20, 0.16);
+
+  /* safety net for any remaining stock palette classes (charts, chips…) */
+  --color-red-300: #d05050;
+  --color-red-400: #b42318;
+  --color-amber-200: #d3a24a;
+  --color-amber-300: #98620a;
+  --color-green-300: #3f9d6a;
+  --color-green-400: #05683e;
+  --color-emerald-300: #0b7a4b;
+  --color-blue-300: #4a8fd6;
+  --color-blue-400: #155e94;
+  --color-cyan-300: #14708a;
+  --color-purple-300: #8a63c9;
+  --color-orange-300: #b46520;
+  --color-orange-400: #9c5415;
+}
+
+/* ============================ base ============================ */
 * {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
+  background-color: var(--color-canvas);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
-  font-family: var(--font-sora), sans-serif;
-  background-color: #0a0a0a;
-  color: white;
+  font-family: var(--font-sans);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  overflow-x: clip;
 }
 
+/* Never let media escape its column on small screens. */
+img,
+video,
+iframe,
+canvas,
+svg,
+table,
+pre {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-brand) 35%, transparent);
+  color: var(--color-ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-brand) 60%, transparent);
+  background-clip: content-box;
+}
+
+/* ======================= animations ======================= */
 @keyframes slide-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-
 .animate-slide-in {
   animation: slide-in 0.4s ease-out;
 }
 
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(0, 200, 83, 0); }
+@keyframes ibihe-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-ticker {
+  animation: ibihe-ticker 45s linear infinite;
+  will-change: transform;
+}
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+[dir="rtl"] .animate-ticker {
+  animation-direction: reverse;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #00c853; }
+@keyframes ibihe-shimmer {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
+}
 
-/* Use system font stack since Google Fonts is blocked in build */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-ticker {
+    animation: none;
+  }
+  .animate-slide-in {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ==================== component primitives ====================
+ * Shared by the public site and the admin console. Utilities in JSX
+ * still win (these live in the components layer), so it is safe to
+ * add `className="x-card p-6"` overrides. */
+@layer components {
+  /* Fluid page container: no fixed gutters, never wider than 1440px. */
+  .x-container {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: clamp(0.875rem, 3.5vw, 2rem);
+  }
+  .x-container-narrow {
+    width: 100%;
+    max-width: 900px;
+    margin-inline: auto;
+    padding-inline: clamp(0.875rem, 3.5vw, 2rem);
+  }
+
+  .x-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  .x-card-pad {
+    padding: clamp(0.875rem, 2.5vw, 1.5rem);
+  }
+  .x-inset {
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+  }
+
+  .x-hr {
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    margin-block: 1rem;
+  }
+
+  .x-label {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: color-mix(in oklab, var(--color-ink) 65%, transparent);
+    margin-bottom: 0.3rem;
+  }
+
+  .x-input {
+    width: 100%;
+    background-color: var(--color-fill);
+    border: 1px solid var(--color-line-2);
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.35rem;
+    color: var(--color-ink);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .x-input::placeholder {
+    color: color-mix(in oklab, var(--color-ink) 40%, transparent);
+  }
+  .x-input:hover:not(:disabled) {
+    border-color: var(--color-line-3);
+  }
+  .x-input:focus {
+    outline: none;
+    border-color: color-mix(in oklab, var(--color-brand) 70%, transparent);
+    background-color: var(--color-surface);
+  }
+  .x-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  textarea.x-input {
+    resize: vertical;
+    min-height: 5rem;
+  }
+  select.x-input {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 1.05rem) calc(50% + 1px), calc(100% - 0.8rem) calc(50% + 1px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-inline-end: 2rem;
+  }
+  [dir="rtl"] select.x-input {
+    background-position: 1.05rem calc(50% + 1px), 0.8rem calc(50% + 1px);
+    padding-inline-end: 0.75rem;
+    padding-inline-start: 2rem;
+  }
+  select.x-input option {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .x-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+  }
+  .x-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .x-btn--primary {
+    background-color: var(--color-brand);
+    color: var(--color-on-brand);
+  }
+  .x-btn--primary:hover:not(:disabled) {
+    background-color: var(--color-brand-bright);
+  }
+  .x-btn--ghost {
+    background-color: var(--color-fill);
+    border-color: var(--color-line-2);
+    color: color-mix(in oklab, var(--color-ink) 80%, transparent);
+  }
+  .x-btn--ghost:hover:not(:disabled) {
+    background-color: var(--color-fill-2);
+    color: var(--color-ink);
+  }
+  .x-btn--danger {
+    background-color: color-mix(in oklab, #ef4444 16%, transparent);
+    border-color: color-mix(in oklab, #ef4444 34%, transparent);
+    color: var(--color-danger);
+  }
+  .x-btn--danger:hover:not(:disabled) {
+    background-color: color-mix(in oklab, #ef4444 26%, transparent);
+  }
+  .x-btn--sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem;
+    border-radius: 0.6rem;
+  }
+  .x-btn--icon {
+    padding: 0.45rem;
+    border-radius: 0.6rem;
+  }
+
+  .x-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background-color: var(--color-fill);
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--color-ink) 70%, transparent);
+    white-space: nowrap;
+  }
+
+  .x-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-bottom: 2px solid transparent;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--color-ink) 55%, transparent);
+    white-space: nowrap;
+  }
+  .x-tab:hover {
+    color: var(--color-ink);
+  }
+  .x-tab[aria-selected="true"],
+  .x-tab[data-active="true"] {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-brand);
+  }
+
+  .x-skeleton {
+    border-radius: 0.75rem;
+    background: linear-gradient(
+      90deg,
+      var(--color-fill) 0%,
+      var(--color-fill-2) 40%,
+      var(--color-fill) 80%
+    );
+    background-size: 220% 100%;
+    animation: ibihe-shimmer 1.4s linear infinite;
+  }
+
+  /* Horizontally scrollable strip (tables, chips, toolbars) on small screens. */
+  .x-scroll-x {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .x-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .x-table th {
+    text-align: start;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: color-mix(in oklab, var(--color-ink) 50%, transparent);
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--color-line);
+    white-space: nowrap;
+    background-color: var(--color-surface-2);
+  }
+  .x-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--color-line);
+    vertical-align: middle;
+  }
+  .x-table tbody tr:hover {
+    background-color: var(--color-fill);
+  }
+
+  /* Text that sits ON TOP of photos / colored bars — always white. */
+  .x-on-image {
+    color: var(--color-on-image);
+  }
+
+  /* Photo wash so overlaid copy stays readable in BOTH themes. */
+  .x-wash {
+    background-image: linear-gradient(to top, rgba(4, 8, 6, 0.93) 0%, rgba(4, 8, 6, 0.55) 45%, rgba(4, 8, 6, 0.08) 100%);
+  }
+
+  /* 16:9 responsive media frame (video embeds, iframes, players). */
+  .x-video {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 0.875rem;
+    background-color: #000;
+    border: 1px solid var(--color-line);
+  }
+  .x-video > iframe,
+  .x-video > video,
+  .x-video > div {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .x-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .x-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .x-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Fluid display sizes (mobile → desktop, no media queries). */
+  .x-title-1 {
+    font-size: clamp(1.45rem, 0.95rem + 2.3vw, 2.4rem);
+    line-height: 1.14;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .x-title-2 {
+    font-size: clamp(1.15rem, 0.9rem + 1.1vw, 1.65rem);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .x-title-3 {
+    font-size: clamp(1rem, 0.86rem + 0.55vw, 1.2rem);
+    line-height: 1.3;
+    font-weight: 700;
+  }
+
+  /* Sticky safe areas for notched phones. */
+  .x-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .x-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .x-skip {
+    position: absolute;
+    inset-inline-start: 0.5rem;
+    top: -4rem;
+    z-index: 100;
+    background: var(--color-brand);
+    color: var(--color-on-brand);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: top 0.15s ease;
+  }
+  .x-skip:focus {
+    top: 0.5rem;
+  }
+}
+
+/* ==================== article prose (rendered from markdown-lite) ==================== */
+.x-prose {
+  font-size: clamp(1rem, 0.95rem + 0.28vw, 1.14rem);
+  line-height: 1.75;
+  color: color-mix(in oklab, var(--color-ink) 90%, transparent);
+}
+.x-prose > * + * {
+  margin-top: 1.05em;
+}
+.x-prose h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  color: var(--color-ink);
+}
+.x-prose h3 {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-top: 1.4em;
+  color: var(--color-ink);
+}
+.x-prose a {
+  color: var(--color-brand-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.x-prose ul,
+.x-prose ol {
+  padding-inline-start: 1.35rem;
+}
+.x-prose ul {
+  list-style: disc;
+}
+.x-prose ol {
+  list-style: decimal;
+}
+.x-prose li + li {
+  margin-top: 0.35em;
+}
+.x-prose blockquote {
+  border-inline-start: 3px solid var(--color-brand);
+  background-color: var(--color-fill);
+  border-radius: 0 0.6rem 0.6rem 0;
+  padding: 0.6rem 0.9rem;
+  font-style: italic;
+  color: color-mix(in oklab, var(--color-ink) 80%, transparent);
+}
+.x-prose figure {
+  margin-block: 1.25em;
+}
+.x-prose figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: color-mix(in oklab, var(--color-ink) 55%, transparent);
+}
+.x-prose pre {
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-line);
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.85em;
+}
+.x-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.x-prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.x-prose th,
+.x-prose td {
+  border: 1px solid var(--color-line);
+  padding: 0.4rem 0.6rem;
+}
+.x-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-line);
 }
 
 /* ============ Light theme (html[data-theme="light"]) ============
