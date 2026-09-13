@@ -1,107 +1,237 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Search, Bell, Menu, X, Brain, Zap } from 'lucide-react';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Menu, Newspaper, User, X } from 'lucide-react';
+import { useLocale } from '@/components/i18n/LanguageProvider';
+import { useAuth } from '@/hooks/useAuth';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { LanguageSwitcher } from '@/components/ui/LanguageToggle';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { Ticker } from './Ticker';
 
-const NAV_ITEMS = [
-  { label: 'Ahabanza', href: '/', key: 'home' },
-  { label: 'Ubuhinzi', href: '/category/ubuhinzi', key: 'ubuhinzi' },
-  { label: 'Politiki', href: '/category/politiki', key: 'politiki' },
-  { label: 'Ubukungu', href: '/category/ubukungu', key: 'ubukungu' },
-  { label: 'Ikoranabuhanga', href: '/category/ikoranabuhanga', key: 'tech' },
-  { label: 'Amahanga', href: '/category/amahanga', key: 'amahanga' },
+interface NavItem {
+  key:
+    | 'home'
+    | 'rwanda'
+    | 'amahanga'
+    | 'business'
+    | 'politics'
+    | 'technology'
+    | 'health'
+    | 'education'
+    | 'entertainment'
+    | 'sports'
+    | 'culture'
+    | 'videos';
+  href: string;
+}
+
+/** Rwanda-first sections — Home · Rwanda · Amahanga · Business · Politics ·
+ *  Technology · Health · Education · Entertainment · Sports · Arts/Culture ·
+ *  Videos (a format filter, not a category). */
+const NAV: NavItem[] = [
+  { key: 'home', href: '/' },
+  { key: 'rwanda', href: '/amakuru?category=rwanda' },
+  { key: 'amahanga', href: '/amakuru?category=amahanga' },
+  { key: 'business', href: '/amakuru?category=ubukungu' },
+  { key: 'politics', href: '/amakuru?category=politiki' },
+  { key: 'technology', href: '/amakuru?category=ikoranabuhanga' },
+  { key: 'health', href: '/amakuru?category=ubuzima' },
+  { key: 'education', href: '/amakuru?category=uburezi' },
+  { key: 'entertainment', href: '/amakuru?category=imyidagaduro' },
+  { key: 'sports', href: '/amakuru?category=imikino' },
+  { key: 'culture', href: '/amakuru?category=umuco' },
+  { key: 'videos', href: '/amakuru?videos=1' },
 ];
 
-const TICKER_ITEMS = [
-  '🌾 Ibirayi: igiciro kizagwa 5% iki cyumweru',
-  '🏛 Amerika: ibiganiro bya diplomasi bigiye gukomeza',
-  '💵 USD/RWF: 1$ = 1,342 Fr — riguma ridahinduka',
-  '☁️ Imvura: izagwa i Musanze no Rubavu ejo hashize',
-  '📈 Ibishyimbo i Nyagatare: hejuru 8% mu byumweru bibiri',
-];
+function AccountButton() {
+  const { t, s } = useLocale();
+  const { user, loading } = useAuth();
+  if (loading) return <span className="size-9 shrink-0 rounded-full bg-fill-2 border border-line" aria-hidden />;
+  if (!user) {
+    return (
+      <Link
+        href="/login"
+        className="shrink-0 rounded-xl bg-brand px-3 py-2 text-[13px] font-semibold text-on-brand transition-colors hover:bg-brand-bright sm:px-4 sm:text-sm"
+      >
+        {t(s.auth.login)}
+      </Link>
+    );
+  }
+  const initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+  return (
+    <Link
+      href="/account"
+      aria-label={t(s.auth.account)}
+      title={user.name || user.email}
+      className="flex size-9 shrink-0 items-center justify-center rounded-full border border-brand/50 bg-brand/15 text-sm font-bold text-brand-ink transition-colors hover:bg-brand/25"
+    >
+      {initial || <User size={16} aria-hidden />}
+    </Link>
+  );
+}
+
+/** Active state for a nav entry — the section pages all live under /amakuru. */
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/';
+  if (href === '/amakuru') return pathname === '/amakuru';
+  return false; // category links only light up on their dedicated pages
+}
 
 export default function Header() {
+  const { t, s } = useLocale();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [tickerIdx, setTickerIdx] = useState(0);
 
+  // A route change always closes the mobile drawer.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- close drawer on navigation
+    setMenuOpen(false);
+  }, [pathname]);
 
+  // No page scroll behind the open drawer.
   useEffect(() => {
-    const t = setInterval(() => setTickerIdx(i => (i + 1) % TICKER_ITEMS.length), 4000);
-    return () => clearInterval(t);
-  }, []);
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* Main nav */}
-      <div className={`bg-[#0a0a0a] border-b border-white/10 transition-all ${scrolled ? 'shadow-lg shadow-black/40' : ''}`}>
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 bg-[#00c853] rounded-lg flex items-center justify-center">
-              <Brain size={16} className="text-black" />
-            </div>
-            <span className="text-white font-bold text-lg tracking-tight">
-              Ibihe<span className="text-[#00c853]">AI</span>
+    <header className="sticky top-0 z-40 border-b border-line bg-canvas/95 backdrop-blur supports-[backdrop-filter]:bg-canvas/80 x-safe-top">
+      {/* Main bar: logo / search / actions */}
+      <div className="x-container flex items-center gap-2 py-2.5 sm:gap-3 sm:py-3">
+        <button
+          type="button"
+          className="-ms-1.5 rounded-lg p-2 text-ink/70 transition-colors hover:bg-fill-2 hover:text-ink lg:hidden"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          aria-label={menuOpen ? t(s.common.close) : t(s.common.open)}
+        >
+          {menuOpen ? <X size={20} aria-hidden /> : <Menu size={20} aria-hidden />}
+        </button>
+
+        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2" aria-label="IbiheNews — home">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand text-on-brand">
+            <Newspaper size={20} aria-hidden />
+          </span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-[17px] font-extrabold tracking-tight text-ink sm:text-lg">
+              Ibihe<span className="text-brand-ink">News</span>
             </span>
-            <span className="text-[10px] bg-[#00c853]/20 text-[#00c853] border border-[#00c853]/30 px-1.5 py-0.5 rounded font-medium">NEWS</span>
-          </Link>
+            <span className="hidden text-[10px] font-medium uppercase tracking-widest text-ink/40 md:block">
+              {t(s.brand.tagline)}
+            </span>
+          </span>
+        </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map(item => (
-              <Link key={item.key} href={item.href}
-                className="text-white/60 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-lg text-sm transition-all">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+        <div className="hidden min-w-0 flex-1 md:block xl:max-w-xl">
+          <SearchBar />
+        </div>
 
-          {/* Right */}
-          <div className="flex items-center gap-2">
-            <button className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-all">
-              <Search size={18} />
-            </button>
-            <button className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-all relative">
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#00c853] rounded-full"></span>
-            </button>
-            <button className="md:hidden text-white/60 hover:text-white p-2" onClick={() => setMenuOpen(o => !o)}>
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
+        <div className="ms-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <ThemeToggle />
+          <LanguageSwitcher compact />
+          <AccountButton />
         </div>
       </div>
 
-      {/* AI Ticker */}
-      <div className="bg-[#00c853] h-8 flex items-center gap-3 px-4 overflow-hidden">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Zap size={12} className="text-black" fill="black" />
-          <span className="text-black text-[11px] font-bold tracking-widest uppercase">AI LIVE</span>
-        </div>
-        <div className="w-px h-4 bg-black/20" />
-        <div className="overflow-hidden flex-1">
-          <div key={tickerIdx} className="text-black text-[13px] font-medium animate-slide-in whitespace-nowrap">
-            {TICKER_ITEMS[tickerIdx]}
-          </div>
-        </div>
-      </div>
+      {/* Section nav — always reachable: chips scroll on phones, row on desktop */}
+      <nav aria-label={t(s.common.primaryNav)} className="border-t border-line">
+        <ul className="x-scroll-x flex items-center gap-0.5 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:gap-0">
+          {NAV.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <li key={item.key} className="shrink-0">
+                <Link
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`block border-b-2 px-2.5 py-2 text-[12.5px] font-semibold transition-colors sm:px-3 sm:text-[13px] lg:px-3.5 ${
+                    active
+                      ? 'border-brand text-ink'
+                      : 'border-transparent text-ink/55 hover:border-line-3 hover:text-ink'
+                  }`}
+                >
+                  {t(s.nav[item.key])}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
-      {/* Mobile menu */}
+      <Ticker />
+
+      {/* Mobile drawer: search + everything */}
       {menuOpen && (
-        <div className="md:hidden bg-[#0a0a0a] border-b border-white/10">
-          {NAV_ITEMS.map(item => (
-            <Link key={item.key} href={item.href}
-              className="block px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 text-sm border-b border-white/5"
-              onClick={() => setMenuOpen(false)}>
-              {item.label}
-            </Link>
-          ))}
+        <div className="lg:hidden">
+          <div
+            className="fixed inset-0 top-0 z-40 bg-scrim backdrop-blur-sm"
+            aria-hidden="true"
+            onClick={() => setMenuOpen(false)}
+          />
+          <nav
+            id="mobile-nav"
+            aria-label={t(s.common.primaryNav)}
+            className="relative z-50 max-h-[78dvh] overflow-y-auto border-t border-line bg-canvas px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3"
+          >
+            <div className="pb-3 md:hidden">
+              <SearchBar autoFocus />
+            </div>
+            <ul className="grid grid-cols-2 gap-1.5">
+              {NAV.map((item) => (
+                <li key={item.key}>
+                  <Link
+                    href={item.href}
+                    className="block rounded-xl bg-fill px-3 py-2.5 text-sm font-semibold text-ink/80 transition-colors hover:bg-fill-2 hover:text-ink"
+                  >
+                    {t(s.nav[item.key])}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3 text-[13px]">
+              {[
+                { href: '/isoko', label: t(s.nav.markets) },
+                { href: '/ikirere', label: t(s.nav.weather) },
+                { href: '/ubuhinzi', label: t(s.nav.agriculture) },
+                { href: '/ubukungu', label: t(s.nav.economy) },
+                { href: '/ibimenyetso', label: t(s.nav.forecasts) },
+                { href: '/ibisobanuro', label: t(s.nav.explainers) },
+                { href: '/baza', label: t(s.nav.ask) },
+                { href: '/briefing', label: t(s.home.briefing) },
+              ].map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="rounded-full border border-line bg-surface px-3 py-1.5 font-medium text-ink/70 transition-colors hover:border-line-3 hover:text-ink"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-3">
+              <LanguageSwitcher />
+              <Link
+                href="/account"
+                className="x-btn x-btn--ghost x-btn--sm"
+                aria-label={t(s.auth.account)}
+              >
+                <User size={14} aria-hidden />
+                {t(s.auth.account)}
+              </Link>
+            </div>
+          </nav>
         </div>
       )}
     </header>

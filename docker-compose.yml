@@ -1,0 +1,29 @@
+# Local Postgres for Ibihe development.
+#
+#   docker compose up -d db
+#   DATABASE_URL=postgres://ibihe:ibihe@localhost:5432/ibihe npm run db:migrate
+#   DATABASE_URL=postgres://ibihe:ibihe@localhost:5432/ibihe npm run dev
+#
+# Without DATABASE_URL the app runs on the JSON file store instead.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ibihe-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ibihe
+      POSTGRES_PASSWORD: ibihe
+      POSTGRES_DB: ibihe
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ibihe -d ibihe']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
